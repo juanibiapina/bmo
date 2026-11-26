@@ -83,6 +83,30 @@ export default class App extends View {{
     )
 }
 
+pub fn quits_after_writing(proof: &Path) -> String {
+    format!(
+        r#"
+import {{ View, div }} from "gpui-kit";
+import * as fs from "fs/promises";
+import process from "process";
+
+export default class App extends View {{
+  init(_props, cx) {{
+    cx.spawn(async () => {{
+      await fs.writeFile("{}", "ran");
+      process.exit(0);
+    }});
+  }}
+
+  render() {{
+    return div();
+  }}
+}}
+"#,
+        proof.display()
+    )
+}
+
 pub fn green_when(work: &str) -> String {
     format!(
         r##"

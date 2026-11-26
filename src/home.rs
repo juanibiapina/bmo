@@ -30,6 +30,10 @@ impl Home {
         &self.applications
     }
 
+    pub fn root(&self) -> &PathBuf {
+        &self.root
+    }
+
     pub fn app(&self, name: &str) -> PathBuf {
         self.root.join("apps").join(name)
     }

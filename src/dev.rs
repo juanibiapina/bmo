@@ -14,42 +14,37 @@ pub fn start(home: &Home, app: &App) -> Result<String, String> {
     let bundle = Bundle {
         title: format!("{} Dev", app.title()),
         id: id(app),
-        arguments: vec![
-            "run".into(),
-            "--dir".into(),
-            app.directory().display().to_string(),
-            "--watch".into(),
-            "--dev".into(),
-        ],
+        home: home.root().clone(),
+        arguments: vec!["run".into(), app.name().into(), "--watch".into()],
     }
     .write_into(&folder)?;
     let log = folder.join(format!("{}.log", app.name()));
     desktop::open(&bundle, &log)?;
-    let window = desktop::wait_until(&id(app), Duration::from_secs(10), Option::is_some)?
-        .ok_or(format!(
-            "{} did not open a window; see {}",
-            app.name(),
-            log.display()
-        ))?;
-    desktop::move_to_workspace(&window, WORKSPACE)?;
+    desktop::wait_until(&id(app), Duration::from_secs(10), Option::is_some)?.ok_or(format!(
+        "{} did not start; see {}",
+        app.name(),
+        log.display()
+    ))?;
+    let place = if desktop::move_to_workspace(&id(app), WORKSPACE, Duration::from_secs(3)) {
+        format!(" on the {WORKSPACE} workspace")
+    } else {
+        String::new()
+    };
     Ok(format!(
-        "{} is running on the {WORKSPACE} workspace and reloads on save\nlog: {}",
+        "{} is running{place} and reloads on save\nlog: {}",
         app.name(),
         log.display()
     ))
 }
 
 pub fn stop(app: &App) -> Result<String, String> {
-    desktop::quit(&running(app)?)?;
-    desktop::wait_until(&id(app), Duration::from_secs(5), Option::is_none)?;
-    Ok(format!("stopped {}", app.name()))
-}
-
-fn running(app: &App) -> Result<desktop::Window, String> {
-    desktop::window(&id(app))?.ok_or(format!(
+    let process = desktop::process(&id(app))?.ok_or(format!(
         "{name} is not running: start it with bmo dev {name}",
         name = app.name()
-    ))
+    ))?;
+    desktop::quit(&process)?;
+    desktop::wait_until(&id(app), Duration::from_secs(5), Option::is_none)?;
+    Ok(format!("stopped {}", app.name()))
 }
 
 fn id(app: &App) -> String {

@@ -7,6 +7,7 @@ const PLIST: &str = include_str!("../template/Info.plist");
 pub struct Bundle {
     pub title: String,
     pub id: String,
+    pub home: PathBuf,
     pub arguments: Vec<String>,
 }
 
@@ -35,12 +36,16 @@ impl Bundle {
 
     fn launcher(&self) -> io::Result<String> {
         let bmo = std::env::current_exe()?;
-        let mut command = quoted(&bmo.display().to_string());
+        let mut command = format!(
+            "BMO_HOME={} exec {}",
+            quoted(&self.home.display().to_string()),
+            quoted(&bmo.display().to_string())
+        );
         for argument in &self.arguments {
             command.push(' ');
             command.push_str(&quoted(argument));
         }
-        Ok(format!("#!/bin/sh\nexec {command}\n"))
+        Ok(format!("#!/bin/sh\n{command}\n"))
     }
 }
 
