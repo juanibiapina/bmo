@@ -13,6 +13,7 @@ gpui_platform = { package = "gpui-fast-platform", version = "0.1", features = ["
 image = { version = "0.25", default-features = false, features = ["png"] }
 serde_json = "1"
 tracing = "0.1"
+wait-timeout = "0.2"
 
 [dev-dependencies]
 image = { version = "0.25", default-features = false, features = ["png"] }

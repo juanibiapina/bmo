@@ -10,6 +10,8 @@ use wait_timeout::ChildExt;
 pub struct Bmo {
     home: tempfile::TempDir,
     applications: tempfile::TempDir,
+    environment: Vec<(String, String)>,
+    bare: bool,
 }
 
 impl Bmo {
@@ -17,7 +19,26 @@ impl Bmo {
         Self {
             home: tempfile::tempdir().expect("temporary bmo home"),
             applications: tempfile::tempdir().expect("temporary applications folder"),
+            environment: Vec::new(),
+            bare: false,
         }
+    }
+
+    pub fn with(mut self, name: &str, value: &str) -> Self {
+        self.environment.push((name.into(), value.into()));
+        self
+    }
+
+    pub fn launched_like_a_mac_app(mut self) -> Self {
+        self.bare = true;
+        self
+    }
+
+    pub fn shows_green(&self, name: &str, work: &str) {
+        self.app_with(name, &green_when(work));
+        let shot = self.run(&["shot", name]);
+        assert!(shot.success, "{}", shot.output());
+        assert_eq!(center_color(&shot.stdout), GREEN, "{}", shot.output());
     }
 
     pub fn home(&self) -> &Path {
@@ -40,8 +61,13 @@ impl Bmo {
     }
 
     pub fn run(&self, arguments: &[&str]) -> Run {
-        let mut child = Command::new(env!("CARGO_BIN_EXE_bmo"))
+        let mut command = Command::new(env!("CARGO_BIN_EXE_bmo"));
+        if self.bare {
+            command.env_clear().env("HOME", std::env::var("HOME").unwrap());
+        }
+        let mut child = command
             .args(arguments)
+            .envs(self.environment.iter().cloned())
             .env("BMO_HOME", self.home())
             .env("BMO_APPLICATIONS", self.applications.path())
             .stdin(Stdio::null())

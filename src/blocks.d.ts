@@ -10,3 +10,19 @@
  * done, idle, ansi0..ansi15.
  */
 export function theme(): Record<string, string>;
+
+/**
+ * Runs a program and resolves when it ends, whatever its exit code. It gets
+ * the user's real environment, so a command that works in their terminal
+ * works here. Use this rather than `process.run`, which starts programs with
+ * an empty environment.
+ *
+ * `timeout` is in milliseconds and defaults to 30,000. `input` is written to
+ * the program's stdin. Rejects when the program cannot start or runs past
+ * the timeout.
+ */
+export function exec(
+  command: string,
+  args?: string[],
+  options?: { cwd?: string; input?: string; timeout?: number },
+): Promise<{ code: number; stdout: string; stderr: string }>;
