@@ -3,7 +3,7 @@ name = "bmo"
 version = "0.1.0"
 edition = "2024"
 description = "A host where agents build desktop apps."
-license = "MIT"
+license = "Apache-2.0"
 publish = false
 
 [dependencies]

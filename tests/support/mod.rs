@@ -28,6 +28,13 @@ impl Bmo {
         self.home().join("apps").join(name)
     }
 
+    pub fn app_with(&self, name: &str, main: &str) -> PathBuf {
+        let created = self.run(&["new", name]);
+        assert!(created.success, "{}", created.output());
+        std::fs::write(self.app(name).join("main.js"), main).expect("write the app");
+        self.app(name)
+    }
+
     pub fn installed(&self, bundle: &str) -> PathBuf {
         self.applications.path().join(bundle)
     }

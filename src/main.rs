@@ -1,10 +1,12 @@
 mod app;
+mod blocks;
 mod bundle;
 mod desktop;
 mod dev;
 mod home;
 mod install;
 mod scaffold;
+mod theme;
 
 use app::App;
 use home::Home;
@@ -46,6 +48,10 @@ fn named(home: &Home, command: &str, name: Option<&String>) -> Result<App, Strin
 }
 
 fn run_host() {
+    if let Err(error) = blocks::export() {
+        eprintln!("bmo: {}", error.message());
+        std::process::exit(1);
+    }
     let components = match gpui_shell::components::components() {
         Ok(components) => components,
         Err(error) => {
