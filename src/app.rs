@@ -33,11 +33,19 @@ impl App {
     }
 
     pub fn title(&self) -> String {
-        let mut characters = self.name.chars();
-        match characters.next() {
-            Some(first) => first.to_uppercase().chain(characters).collect(),
-            None => String::new(),
-        }
+        self.manifest_name().unwrap_or_else(|| {
+            let mut characters = self.name.chars();
+            match characters.next() {
+                Some(first) => first.to_uppercase().chain(characters).collect(),
+                None => String::new(),
+            }
+        })
+    }
+
+    fn manifest_name(&self) -> Option<String> {
+        let text = std::fs::read_to_string(self.directory.join("gpui-shell.json")).ok()?;
+        let manifest: serde_json::Value = serde_json::from_str(&text).ok()?;
+        manifest["name"].as_str().map(str::to_string)
     }
 }
 

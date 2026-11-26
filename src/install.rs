@@ -15,22 +15,10 @@ pub fn install(home: &Home, app: &App) -> Result<String, String> {
             app.directory().display()
         ));
     }
-    let title = displayed_name(app)?;
+    let title = app.title();
     let bundle = home.applications().join(format!("{title}.app"));
     write(&bundle, app, &title).map_err(|error| format!("cannot write {}: {error}", bundle.display()))?;
     Ok(format!("installed {}", bundle.display()))
-}
-
-fn displayed_name(app: &App) -> Result<String, String> {
-    let path = app.directory().join("gpui-shell.json");
-    let problem = |error: String| format!("cannot read {}: {error}", path.display());
-    let text = std::fs::read_to_string(&path).map_err(|error| problem(error.to_string()))?;
-    let manifest: serde_json::Value =
-        serde_json::from_str(&text).map_err(|error| problem(error.to_string()))?;
-    Ok(manifest["name"]
-        .as_str()
-        .map(str::to_string)
-        .unwrap_or_else(|| app.title()))
 }
 
 fn write(bundle: &Path, app: &App, title: &str) -> io::Result<()> {
