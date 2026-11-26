@@ -69,6 +69,25 @@ impl Bmo {
     }
 }
 
+pub fn painted(color: &str) -> String {
+    format!(
+        r#"
+import {{ View, div }} from "gpui-kit";
+
+export default class App extends View {{
+  render() {{
+    return div().size_full().bg("{color}");
+  }}
+}}
+"#
+    )
+}
+
+pub fn center_color(image: &str) -> [u8; 3] {
+    let image = image::open(image.trim()).expect("the screenshot opens").to_rgb8();
+    image.get_pixel(image.width() / 2, image.height() / 2).0
+}
+
 pub struct Run {
     pub success: bool,
     pub stdout: String,

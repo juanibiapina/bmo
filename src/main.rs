@@ -6,6 +6,7 @@ mod dev;
 mod home;
 mod install;
 mod scaffold;
+mod shot;
 mod theme;
 
 use app::App;
@@ -22,7 +23,9 @@ fn main() {
     let result = named(&home, command, arguments.get(1)).and_then(|app| match command {
         "new" => scaffold::create(&app),
         "dev" => dev::start(&home, &app),
-        "shot" => dev::shot(&home, &app),
+        "shot" => export_blocks()
+            .and_then(|()| shot::capture(&home, &app))
+            .map(|never| match never {}),
         "stop" => dev::stop(&app),
         _ => install::install(&home, &app),
     });
@@ -47,9 +50,13 @@ fn named(home: &Home, command: &str, name: Option<&String>) -> Result<App, Strin
     App::named(home, name)
 }
 
+fn export_blocks() -> Result<(), String> {
+    blocks::export().map_err(|error| error.message().to_string())
+}
+
 fn run_host() {
-    if let Err(error) = blocks::export() {
-        eprintln!("bmo: {}", error.message());
+    if let Err(message) = export_blocks() {
+        eprintln!("bmo: {message}");
         std::process::exit(1);
     }
     let components = match gpui_shell::components::components() {

@@ -39,13 +39,6 @@ pub fn start(home: &Home, app: &App) -> Result<String, String> {
     ))
 }
 
-pub fn shot(home: &Home, app: &App) -> Result<String, String> {
-    let window = running(app)?;
-    let image = folder(home).join(format!("{}.png", app.name()));
-    desktop::capture(&window, &image)?;
-    Ok(image.display().to_string())
-}
-
 pub fn stop(app: &App) -> Result<String, String> {
     desktop::quit(&running(app)?)?;
     desktop::wait_until(&id(app), Duration::from_secs(5), Option::is_none)?;

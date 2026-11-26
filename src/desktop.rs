@@ -58,12 +58,6 @@ pub fn move_to_workspace(window: &Window, workspace: &str) -> Result<(), String>
     ]))
 }
 
-pub fn capture(window: &Window, image: &Path) -> Result<(), String> {
-    run(Command::new("screencapture")
-        .args(["-x", "-o", "-l", &window.id])
-        .arg(image))
-}
-
 pub fn quit(window: &Window) -> Result<(), String> {
     run(Command::new("kill").arg(&window.process))
 }
