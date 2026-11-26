@@ -10,6 +10,8 @@ use crate::theme::{self, Appearance};
 
 pub const DECLARATIONS: &str = include_str!("blocks.d.ts");
 
+const DEFAULT_LIMIT: f64 = 30_000.;
+
 pub fn export() -> Result<(), HostError> {
     gpui_shell::export_module(
         HostModule::new("bmo")
@@ -55,18 +57,12 @@ pub fn export() -> Result<(), HostError> {
                 Ok(async move { done(herdr::show(&address)) })
             })
             .async_function("start", |arguments: &HostArguments| {
-                let options = arguments.get(0);
-                let text = |name: &str| {
-                    options
-                        .and_then(|options| options.get(name))
-                        .and_then(HostValue::as_str)
-                        .map(str::to_string)
-                };
+                let options = Options(arguments.get(0));
                 let session = herdr::NewSession {
-                    folder: text("folder"),
-                    task: text("task"),
-                    name: text("name"),
-                    agent: text("agent").unwrap_or_else(|| "pi".into()),
+                    folder: options.text("folder"),
+                    task: options.text("task"),
+                    name: options.text("name"),
+                    agent: options.text("agent").unwrap_or_else(|| "pi".into()),
                 };
                 Ok(async move { done(herdr::start(session)) })
             })
@@ -74,31 +70,43 @@ pub fn export() -> Result<(), HostError> {
     )
 }
 
+struct Options<'a>(Option<&'a HostValue>);
+
+impl Options<'_> {
+    fn value(&self, name: &str) -> Option<&HostValue> {
+        self.0.and_then(|options| options.get(name))
+    }
+
+    fn text(&self, name: &str) -> Option<String> {
+        self.value(name).and_then(HostValue::as_str).map(str::to_string)
+    }
+
+    fn limit(&self) -> Duration {
+        let milliseconds = self
+            .value("timeout")
+            .and_then(HostValue::as_number)
+            .unwrap_or(DEFAULT_LIMIT);
+        Duration::from_millis(milliseconds as u64)
+    }
+}
+
 fn colors() -> HostValue {
-    theme::colors(appearance())
+    let appearance =
+        gpui_shell::with_current_app(|app| look::appearance(app)).unwrap_or(Appearance::Dark);
+    theme::colors(appearance)
         .into_iter()
         .fold(HostObject::new(), |object, (name, color)| object.field(name, color))
         .into()
 }
 
-fn appearance() -> Appearance {
-    gpui_shell::with_current_app(|app| look::appearance(app)).unwrap_or(Appearance::Dark)
-}
-
 fn exec_request(arguments: &HostArguments) -> Result<exec::Request, HostError> {
-    let options = arguments.get(2);
-    let text = |name: &str| options.and_then(|options| options.get(name)).and_then(HostValue::as_str);
+    let options = Options(arguments.get(2));
     Ok(exec::Request {
         program: arguments.string(0)?.to_string(),
         arguments: strings(arguments.get(1), "exec's arguments")?,
-        folder: text("cwd").map(Into::into),
-        input: text("input").map(str::to_string),
-        limit: Duration::from_millis(
-            options
-                .and_then(|options| options.get("timeout"))
-                .and_then(HostValue::as_number)
-                .unwrap_or(30_000.) as u64,
-        ),
+        folder: options.text("cwd").map(Into::into),
+        input: options.text("input"),
+        limit: options.limit(),
     })
 }
 
@@ -111,9 +119,9 @@ fn exec_output(output: exec::Output) -> HostValue {
 }
 
 fn http_request(arguments: &HostArguments, options: usize) -> Result<http::Request, HostError> {
-    let options = arguments.get(options);
-    let option = |name: &str| options.and_then(|options| options.get(name));
-    let headers = option("headers")
+    let options = Options(arguments.get(options));
+    let headers = options
+        .value("headers")
         .and_then(HostValue::as_object)
         .unwrap_or_default()
         .iter()
@@ -121,15 +129,10 @@ fn http_request(arguments: &HostArguments, options: usize) -> Result<http::Reque
         .collect();
     Ok(http::Request {
         url: arguments.string(0)?.to_string(),
-        method: option("method")
-            .and_then(HostValue::as_str)
-            .unwrap_or("GET")
-            .to_uppercase(),
+        method: options.text("method").unwrap_or_else(|| "GET".into()).to_uppercase(),
         headers,
-        body: option("body").and_then(HostValue::as_str).map(str::to_string),
-        limit: Duration::from_millis(
-            option("timeout").and_then(HostValue::as_number).unwrap_or(30_000.) as u64,
-        ),
+        body: options.text("body"),
+        limit: options.limit(),
     })
 }
 
