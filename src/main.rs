@@ -1,6 +1,7 @@
 mod app;
 mod blocks;
 mod bundle;
+mod check;
 mod desktop;
 mod dev;
 mod home;
@@ -8,6 +9,7 @@ mod install;
 mod log;
 mod scaffold;
 mod shot;
+mod stage;
 mod theme;
 mod trust;
 
@@ -28,6 +30,9 @@ fn main() {
         "shot" => export_blocks()
             .and_then(|()| shot::capture(&home, &app, &arguments[2..]))
             .map(|never| match never {}),
+        "check" => export_blocks()
+            .and_then(|()| check::check(&home, &app, &arguments[2..]))
+            .map(|never| match never {}),
         "stop" => dev::stop(&app),
         _ => install::install(&home, &app),
     });
@@ -42,7 +47,7 @@ fn main() {
 
 fn own_command(argument: Option<&String>) -> Option<&str> {
     let command = argument?.as_str();
-    ["new", "dev", "shot", "stop", "install"]
+    ["new", "check", "dev", "shot", "stop", "install"]
         .contains(&command)
         .then_some(command)
 }
