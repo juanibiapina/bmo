@@ -1,5 +1,9 @@
 use std::path::{Path, PathBuf};
-use std::process::{Command, Output};
+use std::io::Read;
+use std::process::{Command, Stdio};
+use std::time::Duration;
+
+use wait_timeout::ChildExt;
 
 pub struct Bmo {
     home: tempfile::TempDir,
@@ -27,13 +31,32 @@ impl Bmo {
     }
 
     pub fn run(&self, arguments: &[&str]) -> Run {
-        let output = Command::new(env!("CARGO_BIN_EXE_bmo"))
+        let mut child = Command::new(env!("CARGO_BIN_EXE_bmo"))
             .args(arguments)
             .env("BMO_HOME", self.home())
             .env("BMO_APPLICATIONS", self.applications.path())
-            .output()
-            .expect("bmo runs");
-        Run::from(output)
+            .stdin(Stdio::null())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()
+            .expect("bmo starts");
+        let status = match child.wait_timeout(Duration::from_secs(20)).expect("bmo waits") {
+            Some(status) => status,
+            None => {
+                child.kill().expect("bmo stops");
+                child.wait().expect("bmo stops");
+                panic!("bmo {} did not finish in 20 seconds", arguments.join(" "));
+            }
+        };
+        let mut stdout = String::new();
+        let mut stderr = String::new();
+        child.stdout.take().unwrap().read_to_string(&mut stdout).unwrap();
+        child.stderr.take().unwrap().read_to_string(&mut stderr).unwrap();
+        Run {
+            success: status.success(),
+            stdout,
+            stderr,
+        }
     }
 }
 
@@ -41,16 +64,6 @@ pub struct Run {
     pub success: bool,
     pub stdout: String,
     pub stderr: String,
-}
-
-impl From<Output> for Run {
-    fn from(output: Output) -> Self {
-        Self {
-            success: output.status.success(),
-            stdout: String::from_utf8_lossy(&output.stdout).into_owned(),
-            stderr: String::from_utf8_lossy(&output.stderr).into_owned(),
-        }
-    }
 }
 
 impl Run {

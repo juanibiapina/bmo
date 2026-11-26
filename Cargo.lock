@@ -846,6 +846,7 @@ dependencies = [
  "gpui-shell",
  "serde_json",
  "tempfile",
+ "wait-timeout",
 ]
 
 [[package]]
