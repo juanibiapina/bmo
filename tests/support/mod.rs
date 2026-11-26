@@ -1,6 +1,8 @@
 #![allow(dead_code)]
 
 use std::path::{Path, PathBuf};
+pub mod server;
+
 use std::io::Read;
 use std::process::{Command, Stdio};
 use std::time::Duration;

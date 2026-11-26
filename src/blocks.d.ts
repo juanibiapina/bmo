@@ -26,3 +26,31 @@ export function exec(
   args?: string[],
   options?: { cwd?: string; input?: string; timeout?: number },
 ): Promise<{ code: number; stdout: string; stderr: string }>;
+
+/**
+ * An HTTP request to any host, with any headers, cookies included. Use this
+ * rather than the global `fetch`, which only reaches hosts the manifest
+ * lists.
+ *
+ * Resolves for every status; check `ok` (true for 200 to 299). `body` is the
+ * response as text: parse JSON with `JSON.parse(response.body)`. Header names
+ * in the response are lower case. `timeout` is in milliseconds and defaults
+ * to 30,000. Rejects when the server cannot be reached.
+ */
+export function fetch(
+  url: string,
+  options?: { method?: string; headers?: Record<string, string>; body?: string; timeout?: number },
+): Promise<{ status: number; ok: boolean; headers: Record<string, string>; body: string }>;
+
+/**
+ * Fetches a URL and saves the response to a file, creating its folder. Use it
+ * for images and other files that are not text. Nothing is saved unless `ok`.
+ *
+ * `image(path)` draws only files inside the app's own folder, so save
+ * pictures under it, in a folder Git ignores.
+ */
+export function download(
+  url: string,
+  file: string,
+  options?: { method?: string; headers?: Record<string, string>; body?: string; timeout?: number },
+): Promise<{ status: number; ok: boolean; headers: Record<string, string> }>;

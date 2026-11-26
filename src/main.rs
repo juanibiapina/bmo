@@ -7,6 +7,7 @@ mod dev;
 mod environment;
 mod exec;
 mod home;
+mod http;
 mod install;
 mod log;
 mod run;
