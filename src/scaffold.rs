@@ -5,6 +5,9 @@ const MAIN: &str = include_str!("../template/main.js");
 pub fn create(home: &Home, name: Option<&str>) -> Result<String, String> {
     let name = name.ok_or("new needs a name: bmo new <name>")?;
     let directory = home.app(name);
+    if directory.exists() {
+        return Err(format!("{name} already exists at {}", directory.display()));
+    }
     std::fs::create_dir_all(&directory).map_err(|error| error.to_string())?;
     std::fs::write(directory.join("gpui-shell.json"), manifest(name))
         .map_err(|error| error.to_string())?;
