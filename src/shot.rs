@@ -17,7 +17,7 @@ const BETWEEN_KEYS: Duration = Duration::from_millis(50);
 pub fn capture(home: &Home, app: &BmoApp, options: &[String]) -> Result<Infallible, String> {
     let keys = keys(options)?;
     let image = home.cache().join("shots").join(format!("{}.png", app.name()));
-    stage::open(home, app, move |stage, cx| {
+    stage::open(home, app, false, move |stage, cx| {
         let runtime = stage.runtime.clone();
         let directory = stage.directory.clone();
         let window = or_exit(stage.window(

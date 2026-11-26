@@ -13,7 +13,7 @@ pub fn check(home: &Home, app: &BmoApp, options: &[String]) -> Result<Infallible
         [option] if option == "--print-spec" => true,
         _ => return Err("check takes only --print-spec: bmo check <name> [--print-spec]".into()),
     };
-    stage::open(home, app, move |stage, cx| {
+    stage::open(home, app, false, move |stage, cx| {
         let window = or_exit(stage.window(
             hidden(cx),
             |_: &mut Window, cx: &mut App| cx.new(|_| Empty),

@@ -18,6 +18,7 @@ pub struct Stage {
 pub fn open(
     home: &Home,
     app: &BmoApp,
+    development: bool,
     then: impl FnOnce(Stage, &mut App) + 'static,
 ) -> Result<Infallible, String> {
     app.require()?;
@@ -29,6 +30,7 @@ pub fn open(
         .with_assets(AppAssets::new(directory.clone()))
         .run(move |cx| {
             gpui_shell::init_with_components(cx, &components);
+            gpui_shell::set_development_mode(development);
             let runtime = or_exit(
                 ShellRuntime::new_with_components(cx, components.clone()).map_err(problem),
             );
