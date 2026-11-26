@@ -1,4 +1,5 @@
 mod app;
+mod bundle;
 mod home;
 mod install;
 mod scaffold;

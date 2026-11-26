@@ -20,6 +20,17 @@ impl App {
         })
     }
 
+    pub fn require(&self) -> Result<(), String> {
+        if self.directory.is_dir() {
+            return Ok(());
+        }
+        Err(format!(
+            "no app named {}: {} does not exist",
+            self.name,
+            self.directory.display()
+        ))
+    }
+
     pub fn name(&self) -> &str {
         &self.name
     }
