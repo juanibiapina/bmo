@@ -39,3 +39,17 @@ Findings:
 4. `line_height(19)` is not accepted; it takes `"19px"`. One stumble, no change.
 
 Changes made: the help sheet lays its groups out in columns; `bmo shot --as <label>` names the file; any command answers `--help`; the guide says how to scroll long content by keys. Finding 1 needs a change to gpui-shell itself and is open.
+
+### 2: 2026-11-27, after the changes from run 1 and the markdown run
+
+- **Numbers:** 5 minutes, $1.49, 36 turns, claude-opus-5-5. No question asked, no hint given. Run 1 took 7 minutes, $1.85 and 40 turns.
+- **Result:** the same shape as run 1: feeds, stories, threaded comments, fold, filter, stored lists, read stories greyed. Not yet used by Juan.
+- **Gone since run 1:** no search outside the app's folder, no rewrite of the help sheet, and screenshots kept with `--as`.
+
+Findings:
+
+1. **Tab never reached the key handler.** The agent found it with two debugging screenshots and bound Tab as an action (3 turns). Run 1 listed Tab as a key without testing it, so that app's Tab probably does nothing.
+2. **Scrolling from code,** as before: the comment pane moves a comment at a time.
+3. Links inside comments are plain text and can't be clicked.
+
+Changes made: the guide shows how to bind Tab.

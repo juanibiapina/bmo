@@ -120,6 +120,11 @@ searches and shows its keys the same way.
   (paragraphs, comments, messages), keep the index of the block at the top,
   and move it with a `VirtualListScrollHandle`'s `scroll_to_item`, as the
   starting app does for its list.
+- Tab and shift-Tab never reach `on_key_down`: the window uses them to move
+  focus first. Bind them as actions and send them to the same handler:
+  `cx.bind_keys([{ keystroke: "tab", action: "app::Next", context: "App" }])`
+  in `init`, then `.key_context("App").on_action("app::Next", (_event, cx) =>
+  this.key({ key: "tab", modifiers: {} }, cx))` on the root element.
 - A length given as a number is pixels, but `line_height` takes `"19px"`.
 - The global `fetch` and `process.run` are the runtime's restricted ones.
   Use `fetch` and `exec` from `bmo`.
