@@ -3,15 +3,20 @@ use std::path::{Path, PathBuf};
 use std::time::Duration;
 
 use gpui_shell::gpui::{
-    AnyWindowHandle, App, AsyncApp, Bounds, Window, WindowBounds, WindowOptions, px, size,
+    AnyWindowHandle, App, AsyncApp, Bounds, Keystroke, Window, WindowBounds, WindowOptions, px,
+    size,
 };
 use gpui_shell::{AppAssets, ShellRuntime};
 
 use crate::app::App as BmoApp;
 use crate::home::Home;
 
-pub fn capture(home: &Home, app: &BmoApp) -> Result<Infallible, String> {
+const SETTLE: Duration = Duration::from_millis(500);
+const BETWEEN_KEYS: Duration = Duration::from_millis(50);
+
+pub fn capture(home: &Home, app: &BmoApp, options: &[String]) -> Result<Infallible, String> {
     app.require()?;
+    let keys = keys(options)?;
     let components = gpui_shell::components::components().map_err(|error| format!("{error:#}"))?;
     let directory = app.directory().clone();
     let image = home.cache().join("shots").join(format!("{}.png", app.name()));
@@ -43,7 +48,7 @@ pub fn capture(home: &Home, app: &BmoApp) -> Result<Infallible, String> {
                 .map_err(|error| format!("{error:#}")),
             );
             cx.spawn(async move |cx| {
-                let saved = save(window, &image, cx).await;
+                let saved = save(window, &keys, &image, cx).await;
                 or_exit(saved);
                 println!("{}", image.display());
                 std::process::exit(0);
@@ -53,8 +58,44 @@ pub fn capture(home: &Home, app: &BmoApp) -> Result<Infallible, String> {
     unreachable!("the screenshot exits from inside the application loop")
 }
 
-async fn save(window: AnyWindowHandle, image: &Path, cx: &mut AsyncApp) -> Result<(), String> {
-    cx.background_executor().timer(Duration::from_millis(500)).await;
+fn keys(options: &[String]) -> Result<Vec<Keystroke>, String> {
+    let mut keys = Vec::new();
+    let mut options = options.iter();
+    while let Some(option) = options.next() {
+        if option != "--keys" {
+            return Err(format!("shot does not take `{option}`: bmo shot <name> [--keys \"j j enter\"]"));
+        }
+        let listed = options.next().ok_or("--keys needs the keys to press, as in --keys \"j j enter\"")?;
+        for key in listed.split_whitespace() {
+            let key: &'static str = key.to_string().leak();
+            keys.push(Keystroke::parse(key).map_err(|error| format!("`{key}` is not a key: {error}"))?);
+        }
+    }
+    Ok(keys)
+}
+
+async fn save(
+    window: AnyWindowHandle,
+    keys: &[Keystroke],
+    image: &Path,
+    cx: &mut AsyncApp,
+) -> Result<(), String> {
+    let pause = async |time: Duration, cx: &mut AsyncApp| cx.background_executor().timer(time).await;
+    let problem = |error: gpui_shell::anyhow::Error| format!("{error:#}");
+    pause(SETTLE, cx).await;
+    for key in keys {
+        cx.update(|cx| {
+            window.update(cx, |_, window, cx| {
+                window.draw(cx).clear(cx);
+                window.dispatch_keystroke(key.clone(), cx);
+            })
+        })
+        .map_err(problem)?;
+        pause(BETWEEN_KEYS, cx).await;
+    }
+    if !keys.is_empty() {
+        pause(SETTLE, cx).await;
+    }
     let rendered = cx
         .update(|cx| {
             window.update(cx, |_, window, cx| {
@@ -62,8 +103,8 @@ async fn save(window: AnyWindowHandle, image: &Path, cx: &mut AsyncApp) -> Resul
                 window.render_to_image()
             })
         })
-        .map_err(|error| format!("{error:#}"))?
-        .map_err(|error| format!("{error:#}"))?;
+        .map_err(problem)?
+        .map_err(problem)?;
     write(&rendered, image).map_err(|error| format!("cannot write {}: {error}", image.display()))
 }
 

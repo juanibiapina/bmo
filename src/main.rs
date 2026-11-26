@@ -24,7 +24,7 @@ fn main() {
         "new" => scaffold::create(&app),
         "dev" => dev::start(&home, &app),
         "shot" => export_blocks()
-            .and_then(|()| shot::capture(&home, &app))
+            .and_then(|()| shot::capture(&home, &app, &arguments[2..]))
             .map(|never| match never {}),
         "stop" => dev::stop(&app),
         _ => install::install(&home, &app),
