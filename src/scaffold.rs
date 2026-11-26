@@ -4,6 +4,11 @@ const MAIN: &str = include_str!("../template/main.js");
 
 pub fn create(home: &Home, name: Option<&str>) -> Result<String, String> {
     let name = name.ok_or("new needs a name: bmo new <name>")?;
+    if !is_valid(name) {
+        return Err(format!(
+            "`{name}` is not a valid name: use lowercase letters, digits and dashes, starting with a letter"
+        ));
+    }
     let directory = home.app(name);
     if directory.exists() {
         return Err(format!("{name} already exists at {}", directory.display()));
@@ -14,6 +19,13 @@ pub fn create(home: &Home, name: Option<&str>) -> Result<String, String> {
     std::fs::write(directory.join("main.js"), MAIN.replace("{{title}}", &title(name)))
         .map_err(|error| error.to_string())?;
     Ok(format!("created {}", directory.display()))
+}
+
+fn is_valid(name: &str) -> bool {
+    name.starts_with(|first: char| first.is_ascii_lowercase())
+        && name
+            .chars()
+            .all(|character| character.is_ascii_lowercase() || character.is_ascii_digit() || character == '-')
 }
 
 fn manifest(name: &str) -> String {
