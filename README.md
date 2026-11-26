@@ -1,8 +1,13 @@
 # bmo
 
-A host where coding agents build native desktop apps. An agent turns a request into an app that runs in its own window, under its own macOS id.
+A host where coding agents build native desktop apps. You ask an agent for an app in a sentence; it builds one that runs in its own window, under its own macOS id, driven by the keyboard.
 
-bmo is one program: the command line an agent drives and the runtime the apps run on. It is built on [gpui-shell](https://gpui-kit.com/shell/).
+bmo is one program: the command line the agent drives and the runtime the apps run on. It is built on [gpui-shell](https://gpui-kit.com/shell/).
+
+- **Building blocks, not a framework.** Apps draw with layout elements and reach the outside through one `bmo` module: colors, programs, HTTP, files, and [Herdr](https://herdr.dev) agent sessions.
+- **No permissions to manage.** Apps are trusted, as scripts on your own machine are.
+- **A loop the agent can close alone.** `bmo check` reports errors and `bmo shot` saves a screenshot, both without a window on your desktop.
+- **Conventions built in.** Every new app starts with vim-style keys, a footer of key hints and a searchable help sheet.
 
 ## Install
 
@@ -10,18 +15,10 @@ bmo is one program: the command line an agent drives and the runtime the apps ru
 cargo install --path .
 ```
 
+Give your agent the skill in [skill/](skill/SKILL.md). It sends the agent to `bmo guide`, the manual for the installed version.
+
 ## Use
 
-Apps live in `~/.config/bmo/apps/<name>/`.
+Ask your agent: "build me a Hacker News reader app".
 
-| Command | What it does |
-|---|---|
-| `bmo new <name>` | Creates an app |
-| `bmo check <name>` | Reports errors without opening a window |
-| `bmo dev <name>` | Runs the app on the AeroSpace workspace `sandbox`, reloading on save |
-| `bmo shot <name>` | Saves a screenshot of the running app and prints its path |
-| `bmo stop <name>` | Stops the running app |
-| `bmo install <name>` | Installs the app in `~/Applications` with the id `bmo.<name>` |
-| `bmo list` | Lists the apps |
-
-An installed app starts from its source folder, so a change shows the next time it starts.
+Apps live in `~/.config/bmo/apps/<name>/`. `bmo` with no arguments lists the commands. An installed app starts from its source folder, so a change shows the next time it starts.
