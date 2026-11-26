@@ -889,6 +889,7 @@ dependencies = [
  "image",
  "serde_json",
  "tempfile",
+ "tracing",
  "wait-timeout",
 ]
 

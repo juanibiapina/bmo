@@ -5,6 +5,7 @@ mod desktop;
 mod dev;
 mod home;
 mod install;
+mod log;
 mod scaffold;
 mod shot;
 mod theme;

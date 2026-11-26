@@ -10,6 +10,7 @@ use gpui_shell::{AppAssets, ShellRuntime};
 
 use crate::app::App as BmoApp;
 use crate::home::Home;
+use crate::log;
 use crate::trust;
 
 const SETTLE: Duration = Duration::from_millis(500);
@@ -19,6 +20,7 @@ pub fn capture(home: &Home, app: &BmoApp, options: &[String]) -> Result<Infallib
     app.require()?;
     let keys = keys(options)?;
     let components = gpui_shell::components::components().map_err(|error| format!("{error:#}"))?;
+    log::to_stderr(tracing::Level::INFO);
     trust::grant_everything(home, app)?;
     let directory = app.directory().clone();
     let image = home.cache().join("shots").join(format!("{}.png", app.name()));

@@ -27,6 +27,21 @@ export default class App extends View {
 "##;
 
 #[test]
+fn a_screenshot_comes_with_what_the_app_logged() {
+    let bmo = Bmo::new();
+    bmo.app_with(
+        "talker",
+        &support::green_when(r#"console.log("hello from the app"); throw new Error("it broke");"#),
+    );
+
+    let shot = bmo.run(&["shot", "talker"]);
+
+    assert!(shot.success, "{}", shot.output());
+    assert!(shot.stderr.contains("hello from the app"), "{}", shot.stderr);
+    assert!(shot.stderr.contains("it broke"), "{}", shot.stderr);
+}
+
+#[test]
 fn a_screenshot_can_follow_key_presses() {
     let bmo = Bmo::new();
     bmo.app_with("keys", TURNS_GREEN_ON_G);
