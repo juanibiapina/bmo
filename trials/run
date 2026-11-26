@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+#
+# Usage: trials/run <trial>
+#
+# Gives a fresh pi session the trial's request, in an empty folder with its own
+# bmo home, and keeps everything it produced.
+
+set -euo pipefail
+
+trial="${1:?usage: trials/run <trial>}"
+repo="$(cd "$(dirname "$0")/.." && pwd)"
+request="$(awk '/^## Request/{found=1; next} /^## /{found=0} found && /^> /{sub(/^> /, ""); print}' "$repo/trials/$trial.md")"
+[ -n "$request" ] || { echo "trials/$trial.md has no request" >&2; exit 1; }
+
+run="${XDG_STATE_HOME:-$HOME/.local/state}/bmo-trials/$trial-$(date +%Y%m%d-%H%M%S)"
+mkdir -p "$run/work" "$run/sessions"
+cd "$run/work"
+
+echo "trial: $trial"
+echo "request: $request"
+echo "run: $run"
+
+BMO_HOME="$run/home" BMO_APPLICATIONS="$run/Applications" \
+  pi --skill "$repo/skill" --session-dir "$run/sessions" --name "bmo trial $trial" \
+  -p "$request" 2>&1 | tee "$run/output.txt"
