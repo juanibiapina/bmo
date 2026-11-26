@@ -18,6 +18,10 @@ impl Home {
         Self { root, applications }
     }
 
+    pub fn cache(&self) -> PathBuf {
+        self.root.join("cache")
+    }
+
     pub fn applications(&self) -> &PathBuf {
         &self.applications
     }

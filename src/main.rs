@@ -1,5 +1,7 @@
 mod app;
 mod bundle;
+mod desktop;
+mod dev;
 mod home;
 mod install;
 mod scaffold;
@@ -14,6 +16,9 @@ fn main() {
     let arguments: Vec<String> = std::env::args().skip(1).collect();
     match arguments.first().map(String::as_str) {
         Some("new") => finish(named(&home, &arguments).and_then(|app| scaffold::create(&app))),
+        Some("dev") => finish(named(&home, &arguments).and_then(|app| dev::start(&home, &app))),
+        Some("shot") => finish(named(&home, &arguments).and_then(|app| dev::shot(&home, &app))),
+        Some("stop") => finish(named(&home, &arguments).and_then(|app| dev::stop(&app))),
         Some("install") => {
             finish(named(&home, &arguments).and_then(|app| install::install(&home, &app)))
         }
