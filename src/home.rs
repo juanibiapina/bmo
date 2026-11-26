@@ -18,6 +18,10 @@ impl Home {
         Self { root, applications }
     }
 
+    pub fn data(&self, name: &str) -> PathBuf {
+        self.root.join("data").join(name)
+    }
+
     pub fn cache(&self) -> PathBuf {
         self.root.join("cache")
     }

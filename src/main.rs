@@ -8,6 +8,7 @@ mod install;
 mod scaffold;
 mod shot;
 mod theme;
+mod trust;
 
 use app::App;
 use home::Home;

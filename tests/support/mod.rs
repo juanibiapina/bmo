@@ -83,6 +83,39 @@ export default class App extends View {{
     )
 }
 
+pub fn green_when(work: &str) -> String {
+    format!(
+        r##"
+import {{ View, div }} from "gpui-kit";
+import * as fs from "fs/promises";
+import process from "process";
+import * as bmo from "bmo";
+
+export default class App extends View {{
+  init(_props, cx) {{
+    this.color = "#888888";
+    cx.spawn(async (cx) => {{
+      try {{
+        const passed = await (async () => {{ {work} }})();
+        this.color = passed ? "#00ff00" : "#ff0000";
+      }} catch (error) {{
+        console.log(String(error));
+        this.color = "#ff0000";
+      }}
+      cx.notify();
+    }});
+  }}
+
+  render() {{
+    return div().size_full().bg(this.color);
+  }}
+}}
+"##
+    )
+}
+
+pub const GREEN: [u8; 3] = [0, 255, 0];
+
 pub fn center_color(image: &str) -> [u8; 3] {
     let image = image::open(image.trim()).expect("the screenshot opens").to_rgb8();
     image.get_pixel(image.width() / 2, image.height() / 2).0
