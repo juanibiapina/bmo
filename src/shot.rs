@@ -9,13 +9,15 @@ use gpui_shell::gpui::{
 
 use crate::app::App as BmoApp;
 use crate::home::Home;
+use crate::look;
+use crate::theme::Appearance;
 use crate::stage::{self, or_exit, problem};
 
 const SETTLE: Duration = Duration::from_millis(500);
 const BETWEEN_KEYS: Duration = Duration::from_millis(50);
 
 pub fn capture(home: &Home, app: &BmoApp, options: &[String]) -> Result<Infallible, String> {
-    let keys = keys(options)?;
+    let keys = options_given(options)?;
     let image = home.cache().join("shots").join(format!("{}.png", app.name()));
     stage::open(home, app, false, move |stage, cx| {
         let runtime = stage.runtime.clone();
@@ -36,14 +38,25 @@ pub fn capture(home: &Home, app: &BmoApp, options: &[String]) -> Result<Infallib
     })
 }
 
-fn keys(options: &[String]) -> Result<Vec<Keystroke>, String> {
+fn options_given(options: &[String]) -> Result<Vec<Keystroke>, String> {
     let mut keys = Vec::new();
     let mut options = options.iter();
     while let Some(option) = options.next() {
-        if option != "--keys" {
-            return Err(format!(
-                "shot does not take `{option}`: bmo shot <name> [--keys \"j j enter\"]"
-            ));
+        match option.as_str() {
+            "--dark" => {
+                look::choose(Appearance::Dark);
+                continue;
+            }
+            "--light" => {
+                look::choose(Appearance::Light);
+                continue;
+            }
+            "--keys" => {}
+            _ => {
+                return Err(format!(
+                    "shot does not take `{option}`: bmo shot <name> [--keys \"j j enter\"] [--dark | --light]"
+                ));
+            }
         }
         let listed = options
             .next()

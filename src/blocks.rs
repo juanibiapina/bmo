@@ -1,11 +1,11 @@
 use std::time::Duration;
 
-use gpui_shell::gpui::WindowAppearance;
 use gpui_shell::{HostArguments, HostError, HostModule, HostObject, HostValue};
 
 use crate::exec;
 use crate::herdr;
 use crate::http;
+use crate::look;
 use crate::theme::{self, Appearance};
 
 const DECLARATIONS: &str = include_str!("blocks.d.ts");
@@ -82,10 +82,7 @@ fn colors() -> HostValue {
 }
 
 fn appearance() -> Appearance {
-    match gpui_shell::with_current_app(|app| app.window_appearance()) {
-        Some(WindowAppearance::Light | WindowAppearance::VibrantLight) => Appearance::Light,
-        _ => Appearance::Dark,
-    }
+    gpui_shell::with_current_app(|app| look::appearance(app)).unwrap_or(Appearance::Dark)
 }
 
 fn exec_request(arguments: &HostArguments) -> Result<exec::Request, HostError> {

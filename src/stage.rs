@@ -8,7 +8,7 @@ use gpui_shell::{FrozenComponentRegistry, ShellRuntime};
 use crate::app::App as BmoApp;
 use crate::assets::Assets;
 use crate::home::Home;
-use crate::{log, trust};
+use crate::{log, look, trust};
 
 pub struct Stage {
     pub runtime: Rc<ShellRuntime>,
@@ -32,6 +32,7 @@ pub fn open(
         .run(move |cx| {
             gpui_shell::init_with_components(cx, &components);
             gpui_shell::set_development_mode(development);
+            look::install(cx);
             let runtime = or_exit(
                 ShellRuntime::new_with_components(cx, components.clone()).map_err(problem),
             );

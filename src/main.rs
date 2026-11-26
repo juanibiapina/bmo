@@ -12,6 +12,7 @@ mod home;
 mod http;
 mod install;
 mod log;
+mod look;
 mod run;
 mod scaffold;
 mod shot;
