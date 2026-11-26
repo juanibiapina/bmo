@@ -4,6 +4,7 @@ mod bundle;
 mod check;
 mod desktop;
 mod dev;
+mod environment;
 mod exec;
 mod home;
 mod install;

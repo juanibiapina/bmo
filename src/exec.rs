@@ -5,6 +5,8 @@ use std::time::Duration;
 
 use wait_timeout::ChildExt;
 
+use crate::environment;
+
 pub struct Request {
     pub program: String,
     pub arguments: Vec<String>,
@@ -24,6 +26,7 @@ pub fn run(request: Request) -> Result<Output, String> {
     let mut command = Command::new(program);
     command
         .args(&request.arguments)
+        .envs(environment::of_the_user().iter().cloned())
         .stdin(if request.input.is_some() { Stdio::piped() } else { Stdio::null() })
         .stdout(Stdio::piped())
         .stderr(Stdio::piped());
