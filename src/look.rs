@@ -37,8 +37,8 @@ pub fn install(cx: &mut App) {
     tokens.secondary_foreground = color("foreground");
     tokens.muted = color("raised");
     tokens.muted_foreground = color("muted");
-    tokens.accent = color("accent");
-    tokens.accent_foreground = color("accent_foreground");
+    tokens.accent = color("raised");
+    tokens.accent_foreground = color("foreground");
     tokens.destructive = color("blocked");
     tokens.destructive_foreground = color("background");
     tokens.border = color("border");
