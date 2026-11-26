@@ -844,6 +844,7 @@ name = "bmo"
 version = "0.1.0"
 dependencies = [
  "gpui-shell",
+ "serde_json",
  "tempfile",
 ]
 

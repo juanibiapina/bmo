@@ -29,6 +29,34 @@ fn an_installed_app_has_its_own_id() {
 }
 
 #[test]
+fn an_app_that_does_not_exist_is_not_installed() {
+    let bmo = Bmo::new();
+
+    let installed = bmo.run(&["install", "ghost"]);
+
+    assert!(!installed.success);
+    assert!(installed.stderr.contains("no app named ghost"), "{}", installed.stderr);
+}
+
+#[test]
+fn an_installed_app_takes_the_name_its_manifest_gives() {
+    let bmo = Bmo::new();
+    bmo.run(&["new", "hn"]);
+    let manifest = bmo.app("hn").join("gpui-shell.json");
+    let renamed = std::fs::read_to_string(&manifest)
+        .expect("manifest")
+        .replace("\"Hn\"", "\"Hacker News & More\"");
+    std::fs::write(&manifest, renamed).expect("manifest");
+
+    let installed = bmo.run(&["install", "hn"]);
+
+    assert!(installed.success, "{}", installed.output());
+    let bundle = bmo.installed("Hacker News & More.app");
+    assert_eq!(plist_value(&bundle, "CFBundleName"), "Hacker News & More");
+    assert_eq!(plist_value(&bundle, "CFBundleIdentifier"), "bmo.hn");
+}
+
+#[test]
 fn an_installed_app_starts_bmo_on_its_source_folder() {
     let bmo = Bmo::new();
     bmo.run(&["new", "hn"]);
