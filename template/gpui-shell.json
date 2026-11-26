@@ -2,8 +2,5 @@
   "id": "{{id}}",
   "name": "{{title}}",
   "version": "0.1.0",
-  "entry": "main.js",
-  "capabilities": {
-    "storage": true
-  }
+  "entry": "main.js"
 }

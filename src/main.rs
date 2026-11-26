@@ -76,15 +76,8 @@ fn run_host() {
         eprintln!("bmo: {message}");
         std::process::exit(1);
     }
-    let components = match gpui_shell::components::components() {
-        Ok(components) => components,
-        Err(error) => {
-            eprintln!("bmo: {error:#}");
-            std::process::exit(1);
-        }
-    };
     gpui_shell::host::main_with_brand_and_components(
         gpui_shell::host::HostBrand::new("bmo", env!("CARGO_PKG_VERSION")),
-        components,
+        gpui_shell::FrozenComponentRegistry::default(),
     );
 }

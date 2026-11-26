@@ -25,7 +25,7 @@ pub fn open(
     app.require()?;
     log::to_stderr(tracing::Level::INFO);
     trust::grant_everything(home, app)?;
-    let components = gpui_shell::components::components().map_err(|error| format!("{error:#}"))?;
+    let components = FrozenComponentRegistry::default();
     let directory = app.directory().clone();
     gpui_platform::application()
         .with_assets(Assets::of(directory.clone()))
