@@ -14,27 +14,16 @@ fn main() {
     home.share_with_runtime();
 
     let arguments: Vec<String> = std::env::args().skip(1).collect();
-    match arguments.first().map(String::as_str) {
-        Some("new") => finish(named(&home, &arguments).and_then(|app| scaffold::create(&app))),
-        Some("dev") => finish(named(&home, &arguments).and_then(|app| dev::start(&home, &app))),
-        Some("shot") => finish(named(&home, &arguments).and_then(|app| dev::shot(&home, &app))),
-        Some("stop") => finish(named(&home, &arguments).and_then(|app| dev::stop(&app))),
-        Some("install") => {
-            finish(named(&home, &arguments).and_then(|app| install::install(&home, &app)))
-        }
-        _ => run_host(),
-    }
-}
-
-fn named(home: &Home, arguments: &[String]) -> Result<App, String> {
-    let command = &arguments[0];
-    let name = arguments
-        .get(1)
-        .ok_or(format!("{command} needs a name: bmo {command} <name>"))?;
-    App::named(home, name)
-}
-
-fn finish(result: Result<String, String>) {
+    let Some(command) = own_command(arguments.first()) else {
+        return run_host();
+    };
+    let result = named(&home, command, arguments.get(1)).and_then(|app| match command {
+        "new" => scaffold::create(&app),
+        "dev" => dev::start(&home, &app),
+        "shot" => dev::shot(&home, &app),
+        "stop" => dev::stop(&app),
+        _ => install::install(&home, &app),
+    });
     match result {
         Ok(message) => println!("{message}"),
         Err(message) => {
@@ -42,6 +31,18 @@ fn finish(result: Result<String, String>) {
             std::process::exit(1);
         }
     }
+}
+
+fn own_command(argument: Option<&String>) -> Option<&str> {
+    let command = argument?.as_str();
+    ["new", "dev", "shot", "stop", "install"]
+        .contains(&command)
+        .then_some(command)
+}
+
+fn named(home: &Home, command: &str, name: Option<&String>) -> Result<App, String> {
+    let name = name.ok_or(format!("{command} needs a name: bmo {command} <name>"))?;
+    App::named(home, name)
 }
 
 fn run_host() {
