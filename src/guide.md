@@ -19,7 +19,8 @@ Apps live in `{{apps}}/<name>/`. Work only inside the app's folder.
 4. `bmo shot <name>` draws a fresh hidden copy of the app, waits half a
    second, and prints what the app logged and then the path of a PNG. Open the
    PNG and look at it. `--keys "j j ?"` presses keys first, so a screen that
-   needs a key press can be captured. `--dark` and `--light` pick the
+   needs a key press can be captured. `--as help` saves it as
+   `<name>-help.png`, to keep several. `--dark` and `--light` pick the
    appearance.
 5. The app is done when the check passes, the output of `bmo shot` has no
    ERROR line, and you have looked at a screenshot of the first screen and of
@@ -114,5 +115,11 @@ searches and shows its keys the same way.
 - The keyboard cannot be moved onto an `Input` from code. For a search or
   filter box, use `TextBox` from `keys.js`, which reads key presses while
   the app keeps the keyboard.
+- A scrolling pane cannot be scrolled from code, only by the wheel. To read
+  long content by keys, draw it as a `list` or `v_virtual_list` of blocks
+  (paragraphs, comments, messages), keep the index of the block at the top,
+  and move it with a `VirtualListScrollHandle`'s `scroll_to_item`, as the
+  starting app does for its list.
+- A length given as a number is pixels, but `line_height` takes `"19px"`.
 - The global `fetch` and `process.run` are the runtime's restricted ones.
   Use `fetch` and `exec` from `bmo`.

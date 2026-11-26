@@ -116,19 +116,39 @@ export class Help {
     return true;
   }
 
+  // The groups shared out over up to three columns of about the same height,
+  // so a long key table still fits the pane.
+  columns(shown) {
+    const groups = [...new Set(shown.map((k) => k.group))].map((name) => ({ name, keys: shown.filter((k) => k.group === name) }));
+    const rows = (group) => group.keys.length + 2;
+    const total = groups.reduce((sum, group) => sum + rows(group), 0);
+    const count = Math.min(3, Math.max(1, Math.ceil(total / 16)));
+    const columns = [[]];
+    let filled = 0;
+    for (const group of groups) {
+      if (filled >= total / count && columns.length < count) {
+        columns.push([]);
+        filled = 0;
+      }
+      columns[columns.length - 1].push(group);
+      filled += rows(group);
+    }
+    return columns;
+  }
+
   // about is one line under the keys saying what the app changes, if anything.
   render(t, keys, about) {
     const shown = keys.filter((k) => this.search.matches([...k.keys, k.label, k.group].join(" ")));
-    const groups = [...new Set(shown.map((k) => k.group))];
     return v_flex().size_full().gap(14).p(20)
       .child(div().text_size(14).font_semibold().text_color(t.foreground).child("Keys"))
       .when(this.searching || Boolean(this.search.text), (el) => el.child(this.search.render(t, this.searching)))
       .when(Boolean(this.search.text) && !shown.length, (el) => el.child(div().text_size(12).text_color(t.dim).child(`No key matches “${this.search.text}”`)))
-      .child(h_flex().gap(28).items_start().flex_wrap().children(groups.map((group) => v_flex().gap(4).min_w(220)
-        .child(div().text_size(10.5).font_semibold().text_color(t.dim).child(group.toUpperCase()))
-        .children(shown.filter((k) => k.group === group).map((k) => h_flex().gap(8).items_center()
-          .child(h_flex().gap(3).w(72).flex_none().children(k.keys.map((key) => keyChip(t, key))))
-          .child(div().text_size(12).text_color(t.muted).child(k.label)))))))
+      .child(h_flex().gap(28).items_start().children(this.columns(shown).map((groups) => v_flex().flex_1().min_w(0).gap(14)
+        .children(groups.map((group) => v_flex().gap(4)
+          .child(div().text_size(10.5).font_semibold().text_color(t.dim).child(group.name.toUpperCase()))
+          .children(group.keys.map((k) => h_flex().gap(8).items_center()
+            .child(h_flex().gap(3).w(60).flex_none().children(k.keys.map((key) => keyChip(t, key))))
+            .child(div().truncate().text_size(12).text_color(t.muted).child(k.label)))))))))
       .child(div().flex_1())
       .child(div().text_size(11.5).text_color(t.dim).child(`${about ? `${about} ` : ""}/ searches the keys; any other key closes this.`));
   }
