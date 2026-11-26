@@ -4,8 +4,10 @@ Usage:
   bmo guide            how to build an app: read this first
   bmo new <name>       create an app from the starting point
   bmo check <name>     load the app and draw it once, with no window
-  bmo shot <name>      save a screenshot of a fresh hidden copy
-                       [--keys "j j ?"] [--dark | --light]
+  bmo shot <name>      save a screenshot of a fresh hidden copy and print its path
+                         --keys "j j ?"    press these keys first
+                         --as <label>      save it as <name>-<label>.png, to keep several
+                         --dark | --light  pick the appearance
   bmo dev <name>       open the app in a window that reloads on save
   bmo stop <name>      close that window
   bmo run <name>       run the app in a window until it closes [--watch]

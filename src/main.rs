@@ -34,11 +34,16 @@ fn main() {
     home.share_with_runtime();
 
     let arguments: Vec<String> = std::env::args().skip(1).collect();
-    let command = arguments.first().map(String::as_str).unwrap_or("help");
+    let wants_help = arguments.iter().any(|argument| argument == "--help" || argument == "-h");
+    let command = match arguments.first().map(String::as_str) {
+        Some(_) if wants_help => "help",
+        Some(command) => command,
+        None => "help",
+    };
     let options = arguments.get(2..).unwrap_or_default();
     let app = || named(&home, command, arguments.get(1));
     let result = match command {
-        "help" | "--help" | "-h" => Ok(help(&home)),
+        "help" => Ok(help(&home)),
         "guide" => Ok(GUIDE
             .replace("{{apps}}", &apps(&home))
             .replace("{{blocks}}", blocks::DECLARATIONS.trim())),

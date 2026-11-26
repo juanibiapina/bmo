@@ -17,8 +17,12 @@ const SETTLE: Duration = Duration::from_millis(500);
 const BETWEEN_KEYS: Duration = Duration::from_millis(50);
 
 pub fn capture(home: &Home, app: &BmoApp, options: &[String]) -> Result<Infallible, String> {
-    let keys = options_given(options)?;
-    let image = home.cache().join("shots").join(format!("{}.png", app.name()));
+    let Options { keys, label } = options_given(options)?;
+    let file = match label {
+        Some(label) => format!("{}-{label}.png", app.name()),
+        None => format!("{}.png", app.name()),
+    };
+    let image = home.cache().join("shots").join(file);
     stage::open(home, app, false, move |stage, cx| {
         let runtime = stage.runtime.clone();
         let directory = stage.directory.clone();
@@ -38,11 +42,25 @@ pub fn capture(home: &Home, app: &BmoApp, options: &[String]) -> Result<Infallib
     })
 }
 
-fn options_given(options: &[String]) -> Result<Vec<Keystroke>, String> {
+struct Options {
+    keys: Vec<Keystroke>,
+    label: Option<String>,
+}
+
+fn options_given(options: &[String]) -> Result<Options, String> {
     let mut keys = Vec::new();
+    let mut label = None;
     let mut options = options.iter();
     while let Some(option) = options.next() {
         match option.as_str() {
+            "--as" => {
+                let given = options.next().ok_or("--as needs a label, as in --as help")?;
+                if !given.chars().all(|character| character.is_ascii_alphanumeric() || character == '-') {
+                    return Err(format!("`{given}` is not a label: use letters, digits and dashes"));
+                }
+                label = Some(given.clone());
+                continue;
+            }
             "--dark" => {
                 look::choose(Appearance::Dark);
                 continue;
@@ -54,7 +72,7 @@ fn options_given(options: &[String]) -> Result<Vec<Keystroke>, String> {
             "--keys" => {}
             _ => {
                 return Err(format!(
-                    "shot does not take `{option}`: bmo shot <name> [--keys \"j j enter\"] [--dark | --light]"
+                    "shot does not take `{option}`: bmo shot <name> [--keys \"j j enter\"] [--as <label>] [--dark | --light]"
                 ));
             }
         }
@@ -66,7 +84,7 @@ fn options_given(options: &[String]) -> Result<Vec<Keystroke>, String> {
             keys.push(Keystroke::parse(key).map_err(|error| format!("`{key}` is not a key: {error}"))?);
         }
     }
-    Ok(keys)
+    Ok(Options { keys, label })
 }
 
 async fn save(

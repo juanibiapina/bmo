@@ -15,6 +15,18 @@ fn bmo_alone_shows_its_commands() {
 }
 
 #[test]
+fn any_command_answers_a_call_for_help() {
+    let bmo = Bmo::new();
+
+    for arguments in [&["shot", "--help"][..], &["help", "shot"], &["new", "-h"]] {
+        let shown = bmo.run(arguments);
+        assert!(shown.success, "{}", shown.output());
+        assert!(shown.stdout.contains("bmo shot <name>"), "{}", shown.stdout);
+        assert!(shown.stdout.contains("--as"), "{}", shown.stdout);
+    }
+}
+
+#[test]
 fn an_unknown_command_is_refused_with_the_commands() {
     let refused = Bmo::new().run(&["bundle"]);
 

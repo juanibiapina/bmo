@@ -27,6 +27,20 @@ export default class App extends View {
 "##;
 
 #[test]
+fn a_screenshot_can_be_kept_under_a_label() {
+    let bmo = Bmo::new();
+    bmo.app_with("red", &painted("#ff0000"));
+
+    let plain = bmo.run(&["shot", "red"]);
+    let labelled = bmo.run(&["shot", "red", "--as", "first-screen"]);
+
+    assert!(plain.stdout.trim().ends_with("/red.png"), "{}", plain.output());
+    assert!(labelled.stdout.trim().ends_with("/red-first-screen.png"), "{}", labelled.output());
+    assert_eq!(center_color(&labelled.stdout), [255, 0, 0]);
+    assert_eq!(center_color(&plain.stdout), [255, 0, 0]);
+}
+
+#[test]
 fn a_screenshot_comes_with_what_the_app_logged() {
     let bmo = Bmo::new();
     bmo.app_with(

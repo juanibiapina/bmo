@@ -24,3 +24,18 @@
 - No send-to-agent keys unless asked, or p / P / n that work.
 
 ## Runs
+
+### 1: 2026-11-27, bmo at the first guide and starting app
+
+- **Numbers:** 7 minutes, $1.85, 40 turns, claude-opus-5-5. No question asked, no hint given.
+- **Path:** read the skill, ran `bmo guide`, `bmo new hn`, read the starting app, then built. Checked and looked at nine screenshots before saying done, light and dark.
+- **Result:** five feeds as tabs, stories on the left, threaded comments on the right, fold and jump keys, a filter, stored lists that draw at once, read stories dimmed. Only theme colors. Not yet used by Juan, so not yet a pass.
+
+Findings:
+
+1. **No way to scroll a pane from code.** The agent searched the types, then the Cargo registry and the workspace, for a scroll handle (6 turns), and ended up moving a selection between comments. A comment taller than the pane needs the mouse wheel. The same gap blocks J / K in any reading view.
+2. **The help sheet overflowed** with 25 keys: the last group was cut off. The agent rewrote the sheet's layout in `keys.js` (6 turns).
+3. **`bmo shot` writes one file per app.** The agent copied the file after each shot to keep nine screens, and tried `bmo shot --help` and `bmo help shot` to find an option.
+4. `line_height(19)` is not accepted; it takes `"19px"`. One stumble, no change.
+
+Changes made: the help sheet lays its groups out in columns; `bmo shot --as <label>` names the file; any command answers `--help`; the guide says how to scroll long content by keys. Finding 1 needs a change to gpui-shell itself and is open.
