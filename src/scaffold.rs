@@ -1,44 +1,31 @@
-use crate::home::Home;
+use std::io;
+
+use crate::app::App;
 
 const MAIN: &str = include_str!("../template/main.js");
+const MANIFEST: &str = include_str!("../template/gpui-shell.json");
 
-pub fn create(home: &Home, name: Option<&str>) -> Result<String, String> {
-    let name = name.ok_or("new needs a name: bmo new <name>")?;
-    if !is_valid(name) {
+pub fn create(app: &App) -> Result<String, String> {
+    let directory = app.directory();
+    if directory.exists() {
         return Err(format!(
-            "`{name}` is not a valid name: use lowercase letters, digits and dashes, starting with a letter"
+            "{} already exists at {}",
+            app.name(),
+            directory.display()
         ));
     }
-    let directory = home.app(name);
-    if directory.exists() {
-        return Err(format!("{name} already exists at {}", directory.display()));
-    }
-    std::fs::create_dir_all(&directory).map_err(|error| error.to_string())?;
-    std::fs::write(directory.join("gpui-shell.json"), manifest(name))
-        .map_err(|error| error.to_string())?;
-    std::fs::write(directory.join("main.js"), MAIN.replace("{{title}}", &title(name)))
-        .map_err(|error| error.to_string())?;
+    write(app).map_err(|error| format!("cannot create {}: {error}", directory.display()))?;
     Ok(format!("created {}", directory.display()))
 }
 
-fn is_valid(name: &str) -> bool {
-    name.starts_with(|first: char| first.is_ascii_lowercase())
-        && name
-            .chars()
-            .all(|character| character.is_ascii_lowercase() || character.is_ascii_digit() || character == '-')
+fn write(app: &App) -> io::Result<()> {
+    std::fs::create_dir_all(app.directory())?;
+    std::fs::write(app.directory().join("gpui-shell.json"), fill(MANIFEST, app))?;
+    std::fs::write(app.directory().join("main.js"), fill(MAIN, app))
 }
 
-fn manifest(name: &str) -> String {
-    format!(
-        "{{\n  \"id\": \"bmo.{name}\",\n  \"name\": \"{}\",\n  \"version\": \"0.1.0\",\n  \"entry\": \"main.js\",\n  \"capabilities\": {{\n    \"storage\": true\n  }}\n}}\n",
-        title(name)
-    )
-}
-
-fn title(name: &str) -> String {
-    let mut characters = name.chars();
-    match characters.next() {
-        Some(first) => first.to_uppercase().chain(characters).collect(),
-        None => String::new(),
-    }
+fn fill(template: &str, app: &App) -> String {
+    template
+        .replace("{{id}}", &app.id())
+        .replace("{{title}}", &app.title())
 }

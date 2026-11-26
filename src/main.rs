@@ -1,6 +1,8 @@
+mod app;
 mod home;
 mod scaffold;
 
+use app::App;
 use home::Home;
 
 fn main() {
@@ -9,9 +11,17 @@ fn main() {
 
     let arguments: Vec<String> = std::env::args().skip(1).collect();
     match arguments.first().map(String::as_str) {
-        Some("new") => finish(scaffold::create(&home, arguments.get(1).map(String::as_str))),
+        Some("new") => finish(named(&home, &arguments).and_then(|app| scaffold::create(&app))),
         _ => run_host(),
     }
+}
+
+fn named(home: &Home, arguments: &[String]) -> Result<App, String> {
+    let command = &arguments[0];
+    let name = arguments
+        .get(1)
+        .ok_or(format!("{command} needs a name: bmo {command} <name>"))?;
+    App::named(home, name)
 }
 
 fn finish(result: Result<String, String>) {
