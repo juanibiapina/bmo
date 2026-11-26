@@ -7,6 +7,7 @@ mod desktop;
 mod dev;
 mod environment;
 mod exec;
+mod herdr;
 mod home;
 mod http;
 mod install;

@@ -54,3 +54,43 @@ export function download(
   file: string,
   options?: { method?: string; headers?: Record<string, string>; body?: string; timeout?: number },
 ): Promise<{ status: number; ok: boolean; headers: Record<string, string> }>;
+
+/** One of Herdr's terminals: a coding agent or a shell the user has open. */
+export interface Session {
+  /** What every other call takes, such as "t20d". */
+  address: string;
+  /** The program in it: "pi", "claude", "zsh". */
+  agent: string;
+  cwd: string;
+  /** "working", "blocked", "done" or "idle". */
+  status: string;
+  /** Where Herdr shows it, as "space / tab". Use it as the label. */
+  where: string;
+  state: string;
+}
+
+/**
+ * The sessions Herdr has open. These five calls reject with "Herdr is not
+ * installed" on a Mac without Herdr, so catch that and leave the feature out.
+ */
+export function sessions(): Promise<Session[]>;
+
+/** The address of the session the user is looking at in Herdr, or null. */
+export function focusedSession(): Promise<string | null>;
+
+/** Types the text into a session and presses enter, as the user would. */
+export function send(address: string, text: string): Promise<null>;
+
+/** Brings Herdr to the front with that session showing. */
+export function show(address: string): Promise<null>;
+
+/**
+ * Opens a new session in Herdr: a space in `folder`, running `agent`
+ * (default "pi"), with `task` as its first message.
+ */
+export function start(options: {
+  folder?: string;
+  task?: string;
+  name?: string;
+  agent?: string;
+}): Promise<null>;

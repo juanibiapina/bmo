@@ -1,6 +1,7 @@
 #![allow(dead_code)]
 
 use std::path::{Path, PathBuf};
+pub mod fakes;
 pub mod server;
 
 use std::io::Read;

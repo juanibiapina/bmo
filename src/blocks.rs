@@ -4,6 +4,7 @@ use gpui_shell::gpui::WindowAppearance;
 use gpui_shell::{HostArguments, HostError, HostModule, HostObject, HostValue};
 
 use crate::exec;
+use crate::herdr;
 use crate::http;
 use crate::theme::{self, Appearance};
 
@@ -38,6 +39,36 @@ pub fn export() -> Result<(), HostError> {
                     }
                     Ok(http_response(&response).into())
                 })
+            })
+            .async_function("sessions", |_: &HostArguments| {
+                Ok(async { herdr::sessions().map(|found| from_json(&found)).map_err(HostError::new) })
+            })
+            .async_function("focusedSession", |_: &HostArguments| {
+                Ok(async { herdr::focused().map(HostValue::from).map_err(HostError::new) })
+            })
+            .async_function("send", |arguments: &HostArguments| {
+                let (address, text) = (arguments.string(0)?.to_string(), arguments.string(1)?.to_string());
+                Ok(async move { done(herdr::send(&address, &text)) })
+            })
+            .async_function("show", |arguments: &HostArguments| {
+                let address = arguments.string(0)?.to_string();
+                Ok(async move { done(herdr::show(&address)) })
+            })
+            .async_function("start", |arguments: &HostArguments| {
+                let options = arguments.get(0);
+                let text = |name: &str| {
+                    options
+                        .and_then(|options| options.get(name))
+                        .and_then(HostValue::as_str)
+                        .map(str::to_string)
+                };
+                let session = herdr::NewSession {
+                    folder: text("folder"),
+                    task: text("task"),
+                    name: text("name"),
+                    agent: text("agent").unwrap_or_else(|| "pi".into()),
+                };
+                Ok(async move { done(herdr::start(session)) })
             })
             .declarations(DECLARATIONS),
     )
@@ -114,6 +145,27 @@ fn http_response(response: &http::Response) -> HostObject {
         .field("status", response.status)
         .field("ok", (200..300).contains(&response.status))
         .field("headers", headers)
+}
+
+fn done(result: Result<(), String>) -> Result<HostValue, HostError> {
+    result.map(|()| HostValue::Null).map_err(HostError::new)
+}
+
+fn from_json(value: &serde_json::Value) -> HostValue {
+    use serde_json::Value;
+    match value {
+        Value::Null => HostValue::Null,
+        Value::Bool(flag) => HostValue::Bool(*flag),
+        Value::Number(number) => HostValue::Number(number.as_f64().unwrap_or(0.)),
+        Value::String(text) => HostValue::Str(text.clone()),
+        Value::Array(items) => HostValue::Array(items.iter().map(from_json).collect()),
+        Value::Object(fields) => HostValue::Object(
+            fields
+                .iter()
+                .map(|(name, value)| (name.clone(), from_json(value)))
+                .collect(),
+        ),
+    }
 }
 
 fn strings(value: Option<&HostValue>, what: &str) -> Result<Vec<String>, HostError> {
