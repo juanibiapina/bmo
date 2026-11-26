@@ -11,6 +11,7 @@ mod herdr;
 mod home;
 mod http;
 mod install;
+mod list;
 mod log;
 mod look;
 mod run;
@@ -20,32 +21,37 @@ mod stage;
 mod theme;
 mod trust;
 
+use std::convert::Infallible;
+
 use app::App;
 use home::Home;
+
+const GUIDE: &str = include_str!("guide.md");
+const HELP: &str = include_str!("help.txt");
 
 fn main() {
     let home = Home::from_environment();
     home.share_with_runtime();
 
     let arguments: Vec<String> = std::env::args().skip(1).collect();
-    let Some(command) = own_command(arguments.first()) else {
-        return run_host();
+    let command = arguments.first().map(String::as_str).unwrap_or("help");
+    let options = arguments.get(2..).unwrap_or_default();
+    let app = || named(&home, command, arguments.get(1));
+    let result = match command {
+        "help" | "--help" | "-h" => Ok(help(&home)),
+        "guide" => Ok(GUIDE
+            .replace("{{apps}}", &apps(&home))
+            .replace("{{blocks}}", blocks::DECLARATIONS.trim())),
+        "list" => list::list(&home),
+        "new" => app().and_then(|app| scaffold::create(&app)),
+        "dev" => app().and_then(|app| dev::start(&home, &app)),
+        "stop" => app().and_then(|app| dev::stop(&app)),
+        "install" => app().and_then(|app| install::install(&home, &app)),
+        "check" => app().and_then(|app| in_window(check::check(&home, &app, options))),
+        "shot" => app().and_then(|app| in_window(shot::capture(&home, &app, options))),
+        "run" => app().and_then(|app| in_window(run::run(&home, &app, options))),
+        unknown => Err(format!("bmo does not know `{unknown}`\n\n{}", help(&home))),
     };
-    let result = named(&home, command, arguments.get(1)).and_then(|app| match command {
-        "new" => scaffold::create(&app),
-        "dev" => dev::start(&home, &app),
-        "shot" => export_blocks()
-            .and_then(|()| shot::capture(&home, &app, &arguments[2..]))
-            .map(|never| match never {}),
-        "run" => export_blocks()
-            .and_then(|()| run::run(&home, &app, &arguments[2..]))
-            .map(|never| match never {}),
-        "check" => export_blocks()
-            .and_then(|()| check::check(&home, &app, &arguments[2..]))
-            .map(|never| match never {}),
-        "stop" => dev::stop(&app),
-        _ => install::install(&home, &app),
-    });
     match result {
         Ok(message) => println!("{message}"),
         Err(message) => {
@@ -55,29 +61,19 @@ fn main() {
     }
 }
 
-fn own_command(argument: Option<&String>) -> Option<&str> {
-    let command = argument?.as_str();
-    ["new", "check", "run", "dev", "shot", "stop", "install"]
-        .contains(&command)
-        .then_some(command)
+fn in_window(ended: Result<Infallible, String>) -> Result<String, String> {
+    ended.map(|never| match never {})
+}
+
+fn help(home: &Home) -> String {
+    HELP.replace("{{apps}}", &apps(home)).trim_end().to_string()
+}
+
+fn apps(home: &Home) -> String {
+    home.root().join("apps").display().to_string()
 }
 
 fn named(home: &Home, command: &str, name: Option<&String>) -> Result<App, String> {
     let name = name.ok_or(format!("{command} needs a name: bmo {command} <name>"))?;
     App::named(home, name)
-}
-
-fn export_blocks() -> Result<(), String> {
-    blocks::export().map_err(|error| error.message().to_string())
-}
-
-fn run_host() {
-    if let Err(message) = export_blocks() {
-        eprintln!("bmo: {message}");
-        std::process::exit(1);
-    }
-    gpui_shell::host::main_with_brand_and_components(
-        gpui_shell::host::HostBrand::new("bmo", env!("CARGO_PKG_VERSION")),
-        gpui_shell::FrozenComponentRegistry::default(),
-    );
 }

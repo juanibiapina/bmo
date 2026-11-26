@@ -8,7 +8,7 @@ use crate::http;
 use crate::look;
 use crate::theme::{self, Appearance};
 
-const DECLARATIONS: &str = include_str!("blocks.d.ts");
+pub const DECLARATIONS: &str = include_str!("blocks.d.ts");
 
 pub fn export() -> Result<(), HostError> {
     gpui_shell::export_module(

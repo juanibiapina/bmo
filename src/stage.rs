@@ -8,7 +8,7 @@ use gpui_shell::{FrozenComponentRegistry, ShellRuntime};
 use crate::app::App as BmoApp;
 use crate::assets::Assets;
 use crate::home::Home;
-use crate::{log, look, trust};
+use crate::{blocks, log, look, trust};
 
 pub struct Stage {
     pub runtime: Rc<ShellRuntime>,
@@ -23,6 +23,7 @@ pub fn open(
     then: impl FnOnce(Stage, &mut App) + 'static,
 ) -> Result<Infallible, String> {
     app.require()?;
+    blocks::export().map_err(|error| error.message().to_string())?;
     log::to_stderr(tracing::Level::INFO);
     trust::grant_everything(home, app)?;
     let components = FrozenComponentRegistry::default();

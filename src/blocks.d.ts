@@ -62,8 +62,8 @@ export interface Session {
   /** The program in it: "pi", "claude", "zsh". */
   agent: string;
   cwd: string;
-  /** "working", "blocked", "done" or "idle". */
-  status: string;
+  /** "working", "blocked", "done" or "idle"; missing for a plain shell. */
+  status?: string;
   /** Where Herdr shows it, as "space / tab". Use it as the label. */
   where: string;
   state: string;

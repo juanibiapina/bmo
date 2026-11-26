@@ -1,0 +1,16 @@
+bmo: a host where agents build desktop apps.
+
+Usage:
+  bmo guide            how to build an app: read this first
+  bmo new <name>       create an app from the starting point
+  bmo check <name>     load the app and draw it once, with no window
+  bmo shot <name>      save a screenshot of a fresh hidden copy
+                       [--keys "j j ?"] [--dark | --light]
+  bmo dev <name>       open the app in a window that reloads on save
+  bmo stop <name>      close that window
+  bmo run <name>       run the app in a window until it closes [--watch]
+  bmo install <name>   install the app in ~/Applications as bmo.<name>
+  bmo list             the apps, and which are installed
+
+Apps live in {{apps}}.
+BMO_HOME picks another home than ~/.config/bmo.
