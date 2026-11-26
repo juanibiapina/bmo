@@ -3,9 +3,10 @@ use std::path::PathBuf;
 use std::rc::Rc;
 
 use gpui_shell::gpui::{AnyWindowHandle, App, Entity, Render, Window, WindowOptions};
-use gpui_shell::{AppAssets, FrozenComponentRegistry, ShellRuntime};
+use gpui_shell::{FrozenComponentRegistry, ShellRuntime};
 
 use crate::app::App as BmoApp;
+use crate::assets::Assets;
 use crate::home::Home;
 use crate::{log, trust};
 
@@ -27,7 +28,7 @@ pub fn open(
     let components = gpui_shell::components::components().map_err(|error| format!("{error:#}"))?;
     let directory = app.directory().clone();
     gpui_platform::application()
-        .with_assets(AppAssets::new(directory.clone()))
+        .with_assets(Assets::of(directory.clone()))
         .run(move |cx| {
             gpui_shell::init_with_components(cx, &components);
             gpui_shell::set_development_mode(development);
