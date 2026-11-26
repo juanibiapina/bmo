@@ -3,12 +3,14 @@ use std::process::{Command, Output};
 
 pub struct Bmo {
     home: tempfile::TempDir,
+    applications: tempfile::TempDir,
 }
 
 impl Bmo {
     pub fn new() -> Self {
         Self {
             home: tempfile::tempdir().expect("temporary bmo home"),
+            applications: tempfile::tempdir().expect("temporary applications folder"),
         }
     }
 
@@ -20,10 +22,15 @@ impl Bmo {
         self.home().join("apps").join(name)
     }
 
+    pub fn installed(&self, bundle: &str) -> PathBuf {
+        self.applications.path().join(bundle)
+    }
+
     pub fn run(&self, arguments: &[&str]) -> Run {
         let output = Command::new(env!("CARGO_BIN_EXE_bmo"))
             .args(arguments)
             .env("BMO_HOME", self.home())
+            .env("BMO_APPLICATIONS", self.applications.path())
             .output()
             .expect("bmo runs");
         Run::from(output)

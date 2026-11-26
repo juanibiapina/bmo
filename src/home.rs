@@ -2,6 +2,7 @@ use std::path::PathBuf;
 
 pub struct Home {
     root: PathBuf,
+    applications: PathBuf,
 }
 
 impl Home {
@@ -10,7 +11,15 @@ impl Home {
             Some(root) => PathBuf::from(root),
             None => user_home().join(".config").join("bmo"),
         };
-        Self { root }
+        let applications = match std::env::var_os("BMO_APPLICATIONS").filter(|value| !value.is_empty()) {
+            Some(applications) => PathBuf::from(applications),
+            None => user_home().join("Applications"),
+        };
+        Self { root, applications }
+    }
+
+    pub fn applications(&self) -> &PathBuf {
+        &self.applications
     }
 
     pub fn app(&self, name: &str) -> PathBuf {

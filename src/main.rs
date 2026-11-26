@@ -1,5 +1,6 @@
 mod app;
 mod home;
+mod install;
 mod scaffold;
 
 use app::App;
@@ -12,6 +13,9 @@ fn main() {
     let arguments: Vec<String> = std::env::args().skip(1).collect();
     match arguments.first().map(String::as_str) {
         Some("new") => finish(named(&home, &arguments).and_then(|app| scaffold::create(&app))),
+        Some("install") => {
+            finish(named(&home, &arguments).and_then(|app| install::install(&home, &app)))
+        }
         _ => run_host(),
     }
 }
