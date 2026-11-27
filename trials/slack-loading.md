@@ -14,3 +14,11 @@ A bug report against an app that exists, in the user's words. It runs with `--he
 - No window opened, and nothing was posted to Slack.
 
 ## Runs
+
+### 2026-11-27, claude-opus-5-5
+
+1.5 minutes, $0.55, 14 turns, no questions, no hints. Kept in `~/.local/state/bmo-trials/slack-loading-20261127-103911`.
+
+- Reproduced it first with `bmo shot slack --wait 6 --keys "j j"`, then fixed the helper to hand its work a fresh `cx` and to run the last work of a burst, in all three places that use it.
+- Added words for an empty conversation and for a load that failed, so the pane no longer says "Loading…" for ever.
+- Four commands, all `check` or `shot --wait`. No window.
