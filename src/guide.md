@@ -51,6 +51,9 @@ it. `bmo list` shows the apps.
 - `gpui-shell.json` holds the `name` the person sees and an optional
   `"window": { "width": 1000, "height": 700 }`. Leave `id` alone. bmo
   ignores `capabilities` there: nothing needs a grant.
+- `bmo.json`, when the app needs it, holds what the app asks of bmo:
+  `{ "title_bar": false }` gives a window with no title bar and no window
+  buttons. Add it when the person asks; the app then needs `q` to quit.
 - `gpui-kit.d.ts` is generated on every check: the exact API of every element
   and module. Search it before using something this guide does not show.
 

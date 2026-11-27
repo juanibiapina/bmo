@@ -8,12 +8,14 @@ use gpui_shell::{FrozenComponentRegistry, ShellRuntime};
 use crate::app::App as BmoApp;
 use crate::assets::Assets;
 use crate::home::Home;
+use crate::settings::Settings;
 use crate::{blocks, log, look, trust};
 
 pub struct Stage {
     pub runtime: Rc<ShellRuntime>,
     pub directory: PathBuf,
     components: FrozenComponentRegistry,
+    pub settings: Settings,
 }
 
 pub fn open(
@@ -23,6 +25,7 @@ pub fn open(
     then: impl FnOnce(Stage, &mut App) + 'static,
 ) -> Result<Infallible, String> {
     app.require()?;
+    let settings = Settings::read(app.directory())?;
     blocks::export().map_err(|error| error.message().to_string())?;
     log::to_stderr(tracing::Level::INFO);
     trust::grant_everything(home, app)?;
@@ -42,6 +45,7 @@ pub fn open(
                     runtime,
                     directory,
                     components,
+                    settings,
                 },
                 cx,
             );

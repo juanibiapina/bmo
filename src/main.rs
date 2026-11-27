@@ -16,6 +16,7 @@ mod log;
 mod look;
 mod run;
 mod scaffold;
+mod settings;
 mod shot;
 mod skill;
 mod socket;

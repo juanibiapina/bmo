@@ -5,7 +5,7 @@ use std::rc::Rc;
 use gpui_shell::ShellRoot;
 use gpui_shell::gpui::{
     self, App, AppContext, Bounds, Context, IntoElement, KeyBinding, Render, TitlebarOptions,
-    Window, WindowBounds, WindowOptions, px, size,
+    Window, WindowBounds, WindowOptions, point, px, size,
 };
 use gpui_shell::plugin::PluginManifest;
 
@@ -46,7 +46,7 @@ pub fn run(home: &Home, app: &BmoApp, options: &[String]) -> Result<Infallible, 
                 }
             }
         };
-        let options = shown(&stage.directory, title, id, cx);
+        let options = shown(&stage.directory, title, id, stage.settings.title_bar, cx);
         let window = or_exit(stage.window(options, build, cx));
 
         cx.spawn(async move |cx| {
@@ -70,7 +70,13 @@ pub fn run(home: &Home, app: &BmoApp, options: &[String]) -> Result<Infallible, 
     })
 }
 
-fn shown(directory: &std::path::Path, title: String, id: String, cx: &App) -> WindowOptions {
+fn shown(
+    directory: &std::path::Path,
+    title: String,
+    id: String,
+    title_bar: bool,
+    cx: &App,
+) -> WindowOptions {
     let size = PluginManifest::read(directory)
         .ok()
         .and_then(|manifest| manifest.window())
@@ -78,9 +84,13 @@ fn shown(directory: &std::path::Path, title: String, id: String, cx: &App) -> Wi
         .unwrap_or(size(px(880.), px(720.)));
     WindowOptions {
         window_bounds: Some(WindowBounds::Windowed(Bounds::centered(None, size, cx))),
+        // Without a title bar the window keeps its title and stays an
+        // ordinary one, so a window manager still tiles it: the bar turns
+        // transparent and its three buttons move out of sight.
         titlebar: Some(TitlebarOptions {
             title: Some(title.into()),
-            ..Default::default()
+            appears_transparent: !title_bar,
+            traffic_light_position: (!title_bar).then(|| point(px(-100.), px(-100.))),
         }),
         app_id: Some(id),
         ..Default::default()
