@@ -19,7 +19,9 @@ Apps live in `{{apps}}/<name>/`. Work only inside the app's folder.
 4. `bmo shot <name>` draws a fresh hidden copy of the app, waits half a
    second, and prints what the app logged and then the path of a PNG. Open the
    PNG and look at it. `--keys "j j ?"` presses keys first, so a screen that
-   needs a key press can be captured. `--as help` saves it as
+   needs a key press can be captured. `--wait 5` waits five seconds instead,
+   before the keys and again after them, for work such as a network load or
+   a live connection. `--as help` saves it as
    `<name>-help.png`, to keep several. `--dark` and `--light` pick the
    appearance.
 5. The app is done when the check passes, the output of `bmo shot` has no
@@ -30,9 +32,12 @@ Apps live in `{{apps}}/<name>/`. Work only inside the app's folder.
 `console.log` appears in the output of `bmo shot`: use it to see what code
 after an `await` did. `bmo install <name>` puts the app in ~/Applications
 under the id `bmo.<name>`; it starts from the source folder, so later edits
-need no reinstall. Install when the person asks. `bmo dev <name>` opens a
-live window that reloads on save, for a person who wants to watch;
-`bmo stop <name>` closes it. `bmo list` shows the apps.
+need no reinstall. Install when the person asks.
+
+`bmo shot` is the only way you look at the app. `bmo run` and `bmo dev` open
+a real window on the person's screen: run them only when the person asks to
+see the app. `bmo dev <name>` reloads on save and `bmo stop <name>` closes
+it. `bmo list` shows the apps.
 
 ## An app
 

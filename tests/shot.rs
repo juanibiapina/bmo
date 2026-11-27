@@ -81,3 +81,32 @@ fn a_screenshot_shows_what_the_app_draws() {
     assert!(shot.success, "{}", shot.output());
     assert_eq!(center_color(&shot.stdout), [255, 0, 0]);
 }
+
+#[test]
+fn a_screenshot_can_wait_for_slow_work() {
+    let bmo = Bmo::new();
+    bmo.app_with(
+        "slow",
+        &support::green_when(r#"await bmo.exec("sleep", ["1.5"]); return true;"#),
+    );
+
+    let color_after = |options: &[&str]| {
+        let shot = bmo.run(&[&["shot", "slow"], options].concat());
+        assert!(shot.success, "{}", shot.output());
+        center_color(&shot.stdout)
+    };
+
+    assert_eq!(color_after(&[]), [136, 136, 136]);
+    assert_eq!(color_after(&["--wait", "3"]), [0, 255, 0]);
+}
+
+#[test]
+fn a_wait_must_be_a_number_of_seconds() {
+    let bmo = Bmo::new();
+    bmo.app_with("red", &painted("#ff0000"));
+
+    let shot = bmo.run(&["shot", "red", "--wait", "soon"]);
+
+    assert!(!shot.success);
+    assert!(shot.stderr.contains("--wait needs seconds"), "{}", shot.stderr);
+}

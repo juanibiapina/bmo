@@ -17,7 +17,7 @@ const SETTLE: Duration = Duration::from_millis(500);
 const BETWEEN_KEYS: Duration = Duration::from_millis(50);
 
 pub fn capture(home: &Home, app: &BmoApp, options: &[String]) -> Result<Infallible, String> {
-    let Options { keys, label } = options_given(options)?;
+    let Options { keys, label, settle } = options_given(options)?;
     let file = match label {
         Some(label) => format!("{}-{label}.png", app.name()),
         None => format!("{}.png", app.name()),
@@ -34,7 +34,7 @@ pub fn capture(home: &Home, app: &BmoApp, options: &[String]) -> Result<Infallib
             cx,
         ));
         cx.spawn(async move |cx| {
-            or_exit(save(window, &keys, &image, cx).await);
+            or_exit(save(window, &keys, settle, &image, cx).await);
             println!("{}", image.display());
             std::process::exit(0);
         })
@@ -45,11 +45,13 @@ pub fn capture(home: &Home, app: &BmoApp, options: &[String]) -> Result<Infallib
 struct Options {
     keys: Vec<Keystroke>,
     label: Option<String>,
+    settle: Duration,
 }
 
 fn options_given(options: &[String]) -> Result<Options, String> {
     let mut keys = Vec::new();
     let mut label = None;
+    let mut settle = SETTLE;
     let mut options = options.iter();
     while let Some(option) = options.next() {
         match option.as_str() {
@@ -59,6 +61,15 @@ fn options_given(options: &[String]) -> Result<Options, String> {
                     return Err(format!("`{given}` is not a label: use letters, digits and dashes"));
                 }
                 label = Some(given.clone());
+                continue;
+            }
+            "--wait" => {
+                settle = options
+                    .next()
+                    .and_then(|given| given.parse().ok())
+                    .filter(|seconds: &f64| seconds.is_finite() && *seconds >= 0.)
+                    .map(Duration::from_secs_f64)
+                    .ok_or("--wait needs seconds, as in --wait 5")?;
                 continue;
             }
             "--dark" => {
@@ -72,7 +83,7 @@ fn options_given(options: &[String]) -> Result<Options, String> {
             "--keys" => {}
             _ => {
                 return Err(format!(
-                    "shot does not take `{option}`: bmo shot <name> [--keys \"j j enter\"] [--as <label>] [--dark | --light]"
+                    "shot does not take `{option}`: bmo shot <name> [--keys \"j j enter\"] [--wait <seconds>] [--as <label>] [--dark | --light]"
                 ));
             }
         }
@@ -84,17 +95,18 @@ fn options_given(options: &[String]) -> Result<Options, String> {
             keys.push(Keystroke::parse(key).map_err(|error| format!("`{key}` is not a key: {error}"))?);
         }
     }
-    Ok(Options { keys, label })
+    Ok(Options { keys, label, settle })
 }
 
 async fn save(
     window: AnyWindowHandle,
     keys: &[Keystroke],
+    settle: Duration,
     image: &Path,
     cx: &mut AsyncApp,
 ) -> Result<(), String> {
     let pause = async |time: Duration, cx: &mut AsyncApp| cx.background_executor().timer(time).await;
-    pause(SETTLE, cx).await;
+    pause(settle, cx).await;
     for key in keys {
         cx.update(|cx| {
             window.update(cx, |_, window, cx| {
@@ -106,7 +118,7 @@ async fn save(
         pause(BETWEEN_KEYS, cx).await;
     }
     if !keys.is_empty() {
-        pause(SETTLE, cx).await;
+        pause(settle, cx).await;
     }
     let rendered = cx
         .update(|cx| {

@@ -6,6 +6,7 @@ Usage:
   bmo check <name>     load the app and draw it once, with no window
   bmo shot <name>      save a screenshot of a fresh hidden copy and print its path
                          --keys "j j ?"    press these keys first
+                         --wait <seconds>  give slow work this long, before and after the keys
                          --as <label>      save it as <name>-<label>.png, to keep several
                          --dark | --light  pick the appearance
   bmo dev <name>       open the app in a window that reloads on save
