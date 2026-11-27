@@ -43,7 +43,7 @@ Changes made: the help sheet lays its groups out in columns; `bmo shot --as <lab
 ### 2: 2026-11-27, after the changes from run 1 and the markdown run
 
 - **Numbers:** 5 minutes, $1.49, 36 turns, claude-opus-5-5. No question asked, no hint given. Run 1 took 7 minutes, $1.85 and 40 turns.
-- **Result:** the same shape as run 1: feeds, stories, threaded comments, fold, filter, stored lists, read stories greyed. Not yet used by Juan.
+- **Result:** the same shape as run 1: feeds, stories, threaded comments, fold, filter, stored lists, read stories greyed. Not yet used by the user.
 - **Gone since run 1:** no search outside the app's folder, no rewrite of the help sheet, and screenshots kept with `--as`.
 
 Findings:

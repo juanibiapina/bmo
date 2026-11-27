@@ -30,7 +30,7 @@ fn sessions_lists_herdrs_terminals() {
 
 #[test]
 fn the_focused_session_is_the_one_herdr_shows() {
-    let fakes = Fakes::new().program("herdr-app", r#"{"agent":"t7","layout":"juan"}"#);
+    let fakes = Fakes::new().program("herdr-app", r#"{"agent":"t7","layout":"main"}"#);
 
     bmo_with(&fakes).shows_green("focused", r#"return (await bmo.focusedSession()) === "t7";"#);
 }
