@@ -22,3 +22,15 @@ A change to an app that exists. It runs against the user's real bmo home (`trial
 - Nothing was posted to Slack.
 
 ## Runs
+
+### 2026-11-27, claude-opus-5-5
+
+6 minutes, $1.38, 33 turns, no questions, no hints. Kept in `~/.local/state/bmo-trials/slack-live-20261127-102810`.
+
+- **Live events:** uses `connect` and `read` from `bmo`, starts the bridge when nothing answers and reconnects with a growing pause. A `channel_marked` event reached the app within a second. The manifest has no grant.
+- **Pictures:** moved to `process.dataDir`; the app folder has only code.
+- **No window:** 16 `bmo shot --wait`, no `bmo run` or `bmo dev`. It read nothing from bmo's source.
+- **Missed:** it removed the check every few seconds instead of keeping it for when the bridge is down, and did not ask. While the bridge is down the app shows nothing new until it reconnects, then catches up once.
+- **Not tested:** a new message, an edit and a reaction arriving. None came during the run, and it posted nothing.
+- **Side effect:** it marked a channel read, at the place it was already read, to make an event.
+- **Finding:** two of the six minutes went to pictures that drew blank in screenshots. A hidden window drew one frame, at the end. Fixed: `bmo shot` now draws frames while it waits.
