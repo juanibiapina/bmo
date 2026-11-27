@@ -11,8 +11,10 @@ bmo is one program: the command line the agent drives and the runtime the apps r
 
 ## Install
 
+bmo builds against a fork of gpui-kit that must be checked out beside it, at `../gpui-kit` ([juanibiapina/gpui-kit](https://github.com/juanibiapina/gpui-kit)).
+
 ```sh
-cargo install --path .
+cargo install --path . --locked
 ```
 
 Every bmo command writes its skill to `~/.agents/skills/bmo/SKILL.md`, where coding agents look for skills, so the skill always matches the installed bmo. It sends the agent to `bmo guide`, the manual for that version. `BMO_SKILLS` picks another skills folder.
