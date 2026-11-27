@@ -22,9 +22,9 @@ impl Home {
         self.root.join("data").join(name)
     }
 
-    /// The copy of an app's code that its installed window runs and watches.
-    pub fn live(&self, name: &str) -> PathBuf {
-        self.root.join("live").join(name)
+    /// Where a running app listens for requests from the command line.
+    pub fn socket(&self, name: &str) -> PathBuf {
+        self.root.join("run").join(format!("{name}.sock"))
     }
 
     pub fn cache(&self) -> PathBuf {

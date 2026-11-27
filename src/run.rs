@@ -11,31 +11,18 @@ use gpui_shell::plugin::PluginManifest;
 
 use crate::app::App as BmoApp;
 use crate::home::Home;
-use crate::live;
+use crate::remote;
 use crate::stage::{self, or_exit, problem};
 
 gpui::actions!(bmo, [Quit]);
 
 pub fn run(home: &Home, app: &BmoApp, options: &[String]) -> Result<Infallible, String> {
-    let (watching, live) = match options {
-        [] => (false, false),
-        [option] if option == "--watch" => (true, false),
-        [option] if option == "--live" => (true, true),
-        _ => return Err("run takes --watch or --live: bmo run <name> [--watch | --live]".into()),
+    let watching = match options {
+        [] => false,
+        [option] if option == "--watch" => true,
+        _ => return Err("run takes only --watch: bmo run <name> [--watch]".into()),
     };
-    // An installed app runs a copy of its code that only `bmo reload` changes,
-    // so edits in progress never reach the window the person is using.
-    let copy;
-    let app = if live {
-        app.require()?;
-        let folder = home.live(app.name());
-        live::sync(app.directory(), &folder)
-            .map_err(|error| format!("cannot make the live copy of {}: {error}", app.name()))?;
-        copy = app.at(folder);
-        &copy
-    } else {
-        app
-    };
+    let socket = home.socket(app.name());
     let title = app.title();
     let id = app.id();
     stage::open(home, app, watching, move |stage, cx| {
@@ -73,7 +60,8 @@ pub fn run(home: &Home, app: &BmoApp, options: &[String]) -> Result<Infallible, 
         .detach();
 
         let root = loaded.borrow_mut().take();
-        if let (true, Some(root)) = (watching, root) {
+        if watching {
+            let Some(root) = root else { return };
             let watch = window
                 .update(cx, |_, window, cx| stage.runtime.watch(&root, window, cx))
                 .and_then(|watch| watch);
@@ -81,7 +69,31 @@ pub fn run(home: &Home, app: &BmoApp, options: &[String]) -> Result<Infallible, 
                 Ok(watch) => watch.forget(),
                 Err(error) => eprintln!("bmo: cannot watch for changes: {error:#}"),
             }
+            return;
         }
+
+        // A window the person uses takes new code only when `bmo reload` asks.
+        let requests = match remote::listen(&socket) {
+            Ok(requests) => requests,
+            Err(error) => {
+                eprintln!("bmo: cannot listen for reloads at {}: {error}", socket.display());
+                return;
+            }
+        };
+        let runtime = stage.runtime.clone();
+        cx.spawn(async move |cx| {
+            while let Ok(request) = requests.recv().await {
+                let outcome = match &root {
+                    None => Err("the app failed to start: quit and reopen it".to_string()),
+                    Some(root) => cx
+                        .update(|cx| window.update(cx, |_, window, cx| runtime.reload(root, window, cx)))
+                        .map_err(problem)
+                        .and_then(|reloaded| reloaded.map_err(problem)),
+                };
+                request.answer(outcome);
+            }
+        })
+        .detach();
     })
 }
 

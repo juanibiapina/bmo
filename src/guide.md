@@ -39,10 +39,12 @@ Apps live in `{{apps}}/<name>/`. Work only inside the app's folder.
 after an `await` did.
 
 `bmo install <name>` puts the app in ~/Applications under the id
-`bmo.<name>`. Install when the person asks. An installed app runs a copy of
-its code, so your edits do not reach the window the person has open.
+`bmo.<name>`. Install when the person asks. A running app reads its code
+when it starts, so your edits do not reach the window the person has open.
 `bmo reload <name>` hands them over: it runs the check, and when that passes
-the open window takes the new code in place, without closing. When
+the open window takes the new code in place, without closing. If the
+running app cannot take it, the command fails with the reason and the
+window keeps the code from before. When
 `bmo list` shows the app as installed, end every change with a reload, after
 the screenshots look right, and tell the person it is live.
 

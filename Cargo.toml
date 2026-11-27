@@ -8,8 +8,8 @@ publish = false
 
 [dependencies]
 async-channel = "2"
-gpui-shell = "=0.11.0"
-gpui-base = "=0.11.0"
+gpui-shell = { path = "../gpui-kit/crates/shell" }
+gpui-base = { path = "../gpui-kit/crates/base" }
 gpui-fast = { version = "0.1", features = ["test-support"] }
 gpui_platform = { package = "gpui-fast-platform", version = "0.1", features = ["test-support"] }
 image = { version = "0.25", default-features = false, features = ["png"] }

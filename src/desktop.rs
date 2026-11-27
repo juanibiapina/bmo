@@ -28,15 +28,6 @@ pub fn process(bundle_id: &str) -> Result<Option<String>, String> {
     }))
 }
 
-/// The command line a process was started with.
-pub fn arguments(process: &str) -> String {
-    Command::new("ps")
-        .args(["-o", "args=", "-p", process])
-        .output()
-        .map(|output| String::from_utf8_lossy(&output.stdout).into_owned())
-        .unwrap_or_default()
-}
-
 pub fn wait_until(
     bundle_id: &str,
     limit: Duration,

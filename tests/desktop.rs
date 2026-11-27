@@ -84,12 +84,12 @@ fn becomes(proof: &std::path::Path, text: &str) -> bool {
 
 #[test]
 #[ignore = "opens a window on the desktop"]
-fn a_running_installed_app_takes_new_code_on_reload_and_not_before() {
+fn a_running_app_takes_new_code_on_reload_and_not_before() {
     let bmo = Bmo::new();
     let proof = bmo.home().join("proof.txt");
     let app = bmo.app_with("living", &writes_at_start(&proof, "one"));
     let mut running = std::process::Command::new(env!("CARGO_BIN_EXE_bmo"))
-        .args(["run", "living", "--live"])
+        .args(["run", "living"])
         .env("BMO_HOME", bmo.home())
         .env("BMO_SKILLS", bmo.skills())
         .spawn()
@@ -107,5 +107,38 @@ fn a_running_installed_app_takes_new_code_on_reload_and_not_before() {
     assert!(started, "the app never started");
     assert_eq!(untouched, "one", "an edit reached the running app before the reload");
     assert!(reloaded.success, "{}", reloaded.output());
+    assert!(reloaded.stdout.contains("reloaded living"), "{}", reloaded.output());
     assert!(updated, "the running app did not take the new code");
+}
+
+#[test]
+#[ignore = "opens a window on the desktop"]
+fn a_reload_that_fails_in_the_running_app_says_why() {
+    let bmo = Bmo::new();
+    let proof = bmo.home().join("proof.txt");
+    let app = bmo.app_with("fragile", &writes_at_start(&proof, "one"));
+    let mut running = std::process::Command::new(env!("CARGO_BIN_EXE_bmo"))
+        .args(["run", "fragile"])
+        .env("BMO_HOME", bmo.home())
+        .env("BMO_SKILLS", bmo.skills())
+        .spawn()
+        .expect("the app starts");
+    let started = becomes(&proof, "one");
+
+    // Passes the check, which draws a fresh copy, but throws when the
+    // running app builds its view again.
+    let throws_on_second_start = writes_at_start(&proof, "two").replace(
+        "init(_props, cx) {",
+        "init(_props, cx) { if (globalThis.started) throw new Error(\"second start\"); globalThis.started = true;",
+    );
+    std::fs::write(app.join("main.js"), &throws_on_second_start).unwrap();
+    let first = bmo.run(&["reload", "fragile"]);
+    let second = bmo.run(&["reload", "fragile"]);
+    running.kill().expect("the app stops");
+    running.wait().expect("the app stops");
+
+    assert!(started, "the app never started");
+    assert!(first.success, "{}", first.output());
+    assert!(!second.success, "{}", second.output());
+    assert!(second.stderr.contains("second start"), "{}", second.stderr);
 }

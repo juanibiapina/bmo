@@ -1,25 +1,20 @@
 use std::process::Command;
 
 use crate::app::App;
-use crate::desktop;
 use crate::home::Home;
-use crate::live;
+use crate::remote;
 
 pub fn reload(home: &Home, app: &App) -> Result<String, String> {
     app.require()?;
     let name = app.name();
     check(name)?;
-    live::sync(app.directory(), &home.live(name))
-        .map_err(|error| format!("cannot update the live copy of {name}: {error}"))?;
-    let Some(process) = desktop::process(&app.id())? else {
-        return Ok(format!("{name} is not running; it starts with the new code"));
-    };
-    if !desktop::arguments(&process).contains("--live") {
-        return Err(format!(
-            "{name} is running, but it was installed by an older bmo and cannot reload: run bmo install {name}, then quit and reopen it once"
-        ));
+    match remote::ask_to_reload(&home.socket(name)) {
+        None => Ok(format!("{name} is not running; it starts with the new code")),
+        Some(Ok(())) => Ok(format!("reloaded {name}")),
+        Some(Err(message)) => Err(format!(
+            "{message}\n{name} could not reload; its window still runs the code from before"
+        )),
     }
-    Ok(format!("reloaded {name}"))
 }
 
 /// New code reaches a running window only after it passes the check.
