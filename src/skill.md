@@ -10,4 +10,4 @@ bmo turns a folder of JavaScript into a native macOS app. Run `bmo guide` first 
 - **A new app:** pick a short lowercase name, create it with `bmo new`, and build it in the loop the guide gives. Start from what `bmo new` wrote and reshape it.
 - **A change:** find the app with `bmo list` and edit it in its folder. Read the app before changing it.
 - **Questions:** decide the design yourself, from the guide's conventions. Ask the person only what only they know: which account, which data, a matter of taste.
-- **Done:** the guide says when an app is done. Then tell the person what the app does and its main keys, and give the path of a screenshot. Install it when they ask.
+- **Done:** the guide says when an app is done. Then tell the person what the app does and its main keys, and give the path of a screenshot. Install it when they ask; when it is installed already, reload it as the guide says.

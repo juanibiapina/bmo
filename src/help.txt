@@ -13,6 +13,7 @@ Usage:
   bmo stop <name>      close that window
   bmo run <name>       run the app in a window until it closes [--watch]
   bmo install <name>   install the app in ~/Applications as bmo.<name>
+  bmo reload <name>    check the app, then give its open window the new code
   bmo list             the apps, and which are installed
 
 Apps live in {{apps}}.

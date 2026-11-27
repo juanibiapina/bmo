@@ -57,7 +57,7 @@ fn an_installed_app_takes_the_name_its_manifest_gives() {
 }
 
 #[test]
-fn an_installed_app_starts_bmo_on_its_source_folder() {
+fn an_installed_app_starts_bmo_on_a_live_copy_of_its_source() {
     let bmo = Bmo::new();
     bmo.run(&["new", "hn"]);
     bmo.run(&["install", "hn"]);
@@ -72,5 +72,5 @@ fn an_installed_app_starts_bmo_on_its_source_folder() {
     assert!(mode & 0o111 != 0, "the launcher is not executable");
     assert!(script.contains(env!("CARGO_BIN_EXE_bmo")), "{script}");
     assert!(script.contains(bmo.home().to_str().unwrap()), "{script}");
-    assert!(script.contains("'hn'"), "{script}");
+    assert!(script.contains("'run' 'hn' '--live'"), "{script}");
 }

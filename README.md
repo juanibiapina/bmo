@@ -21,4 +21,4 @@ Every bmo command writes its skill to `~/.agents/skills/bmo/SKILL.md`, where cod
 
 Ask your agent: "build me a Hacker News reader app".
 
-Apps live in `~/.config/bmo/apps/<name>/`. `bmo` with no arguments lists the commands. An installed app starts from its source folder, so a change shows the next time it starts.
+Apps live in `~/.config/bmo/apps/<name>/`. `bmo` with no arguments lists the commands. An installed app runs a copy of its code. `bmo reload <name>` checks the source and hands it to the open window, which takes it in place; an app that is not running starts with the newest code.

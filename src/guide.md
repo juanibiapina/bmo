@@ -36,9 +36,15 @@ Apps live in `{{apps}}/<name>/`. Work only inside the app's folder.
    `--light` too.
 
 `console.log` appears in the output of `bmo shot`: use it to see what code
-after an `await` did. `bmo install <name>` puts the app in ~/Applications
-under the id `bmo.<name>`; it starts from the source folder, so later edits
-need no reinstall. Install when the person asks.
+after an `await` did.
+
+`bmo install <name>` puts the app in ~/Applications under the id
+`bmo.<name>`. Install when the person asks. An installed app runs a copy of
+its code, so your edits do not reach the window the person has open.
+`bmo reload <name>` hands them over: it runs the check, and when that passes
+the open window takes the new code in place, without closing. When
+`bmo list` shows the app as installed, end every change with a reload, after
+the screenshots look right, and tell the person it is live.
 
 `bmo shot` is the only way you look at the app. `bmo run` and `bmo dev` open
 a real window on the person's screen: run them only when the person asks to

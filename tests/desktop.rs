@@ -48,3 +48,64 @@ fn a_running_app_can_be_stopped() {
     assert!(!again.success);
     assert!(again.stderr.contains("devtest is not running"), "{}", again.stderr);
 }
+
+fn writes_at_start(proof: &std::path::Path, text: &str) -> String {
+    format!(
+        r#"
+import {{ View, div }} from "gpui-kit";
+import * as fs from "fs/promises";
+
+export default class App extends View {{
+  init(_props, cx) {{
+    cx.spawn(async () => {{
+      await fs.writeFile("{}", "{text}");
+    }});
+  }}
+
+  render() {{
+    return div();
+  }}
+}}
+"#,
+        proof.display()
+    )
+}
+
+fn becomes(proof: &std::path::Path, text: &str) -> bool {
+    let started = std::time::Instant::now();
+    while started.elapsed() < std::time::Duration::from_secs(10) {
+        if std::fs::read_to_string(proof).is_ok_and(|found| found == text) {
+            return true;
+        }
+        std::thread::sleep(std::time::Duration::from_millis(100));
+    }
+    false
+}
+
+#[test]
+#[ignore = "opens a window on the desktop"]
+fn a_running_installed_app_takes_new_code_on_reload_and_not_before() {
+    let bmo = Bmo::new();
+    let proof = bmo.home().join("proof.txt");
+    let app = bmo.app_with("living", &writes_at_start(&proof, "one"));
+    let mut running = std::process::Command::new(env!("CARGO_BIN_EXE_bmo"))
+        .args(["run", "living", "--live"])
+        .env("BMO_HOME", bmo.home())
+        .env("BMO_SKILLS", bmo.skills())
+        .spawn()
+        .expect("the app starts");
+    let started = becomes(&proof, "one");
+
+    std::fs::write(app.join("main.js"), writes_at_start(&proof, "two")).unwrap();
+    std::thread::sleep(std::time::Duration::from_secs(2));
+    let untouched = std::fs::read_to_string(&proof).unwrap_or_default();
+    let reloaded = bmo.run(&["reload", "living"]);
+    let updated = becomes(&proof, "two");
+    running.kill().expect("the app stops");
+    running.wait().expect("the app stops");
+
+    assert!(started, "the app never started");
+    assert_eq!(untouched, "one", "an edit reached the running app before the reload");
+    assert!(reloaded.success, "{}", reloaded.output());
+    assert!(updated, "the running app did not take the new code");
+}

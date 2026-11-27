@@ -22,6 +22,11 @@ impl Home {
         self.root.join("data").join(name)
     }
 
+    /// The copy of an app's code that its installed window runs and watches.
+    pub fn live(&self, name: &str) -> PathBuf {
+        self.root.join("live").join(name)
+    }
+
     pub fn cache(&self) -> PathBuf {
         self.root.join("cache")
     }

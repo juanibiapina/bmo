@@ -2,7 +2,7 @@ mod support;
 
 use support::Bmo;
 
-const COMMANDS: [&str; 9] = ["guide", "new", "check", "shot", "dev", "stop", "run", "install", "list"];
+const COMMANDS: [&str; 10] = ["guide", "new", "check", "shot", "dev", "stop", "run", "install", "reload", "list"];
 
 #[test]
 fn bmo_alone_shows_its_commands() {

@@ -11,15 +11,30 @@ use gpui_shell::plugin::PluginManifest;
 
 use crate::app::App as BmoApp;
 use crate::home::Home;
+use crate::live;
 use crate::stage::{self, or_exit, problem};
 
 gpui::actions!(bmo, [Quit]);
 
 pub fn run(home: &Home, app: &BmoApp, options: &[String]) -> Result<Infallible, String> {
-    let watching = match options {
-        [] => false,
-        [option] if option == "--watch" => true,
-        _ => return Err("run takes only --watch: bmo run <name> [--watch]".into()),
+    let (watching, live) = match options {
+        [] => (false, false),
+        [option] if option == "--watch" => (true, false),
+        [option] if option == "--live" => (true, true),
+        _ => return Err("run takes --watch or --live: bmo run <name> [--watch | --live]".into()),
+    };
+    // An installed app runs a copy of its code that only `bmo reload` changes,
+    // so edits in progress never reach the window the person is using.
+    let copy;
+    let app = if live {
+        app.require()?;
+        let folder = home.live(app.name());
+        live::sync(app.directory(), &folder)
+            .map_err(|error| format!("cannot make the live copy of {}: {error}", app.name()))?;
+        copy = app.at(folder);
+        &copy
+    } else {
+        app
     };
     let title = app.title();
     let id = app.id();

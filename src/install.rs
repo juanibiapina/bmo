@@ -8,7 +8,7 @@ pub fn install(home: &Home, app: &App) -> Result<String, String> {
         title: app.title(),
         id: app.id(),
         home: home.root().clone(),
-        arguments: vec!["run".into(), app.name().into()],
+        arguments: vec!["run".into(), app.name().into(), "--live".into()],
     };
     let path = bundle.write_into(home.applications())?;
     Ok(format!("installed {}", path.display()))

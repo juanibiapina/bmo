@@ -12,8 +12,10 @@ mod home;
 mod http;
 mod install;
 mod list;
+mod live;
 mod log;
 mod look;
+mod reload;
 mod run;
 mod scaffold;
 mod settings;
@@ -56,6 +58,7 @@ fn main() {
         "dev" => app().and_then(|app| dev::start(&home, &app)),
         "stop" => app().and_then(|app| dev::stop(&app)),
         "install" => app().and_then(|app| install::install(&home, &app)),
+        "reload" => app().and_then(|app| reload::reload(&home, &app)),
         "check" => app().and_then(|app| in_window(check::check(&home, &app, options))),
         "shot" => app().and_then(|app| in_window(shot::capture(&home, &app, options))),
         "run" => app().and_then(|app| in_window(run::run(&home, &app, options))),

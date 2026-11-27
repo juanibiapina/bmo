@@ -20,6 +20,14 @@ impl App {
         })
     }
 
+    /// The same app, with its code read from another folder.
+    pub fn at(&self, directory: PathBuf) -> Self {
+        Self {
+            name: self.name.clone(),
+            directory,
+        }
+    }
+
     pub fn require(&self) -> Result<(), String> {
         if self.directory.is_dir() {
             return Ok(());
