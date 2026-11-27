@@ -20,14 +20,13 @@ Agents write good code when the platform is small, opinionated and checkable. bm
 
 ## Install
 
-bmo needs Rust and macOS. It builds against a [fork of gpui-kit](https://github.com/juanibiapina/gpui-kit) that carries a few fixes not yet upstream, checked out beside it:
+bmo needs Rust and macOS.
 
 ```sh
-git clone https://github.com/juanibiapina/gpui-kit
-git -C gpui-kit checkout shell-reload-on-demand
-git clone https://github.com/juanibiapina/bmo
-cargo install --path bmo --locked
+cargo install --git https://github.com/juanibiapina/bmo --locked
 ```
+
+It builds against a [fork of gpui-kit](https://github.com/juanibiapina/gpui-kit) that carries a few fixes not yet upstream. Cargo fetches it.
 
 ## Use
 

@@ -3284,6 +3284,7 @@ dependencies = [
 [[package]]
 name = "gpui-base"
 version = "0.11.0"
+source = "git+https://github.com/juanibiapina/gpui-kit?branch=bmo#a044db2e6482b1fb6550b98808da0154577dce29"
 dependencies = [
  "aho-corasick",
  "anyhow",
@@ -3326,6 +3327,7 @@ dependencies = [
 [[package]]
 name = "gpui-component"
 version = "0.11.0"
+source = "git+https://github.com/juanibiapina/gpui-kit?branch=bmo#a044db2e6482b1fb6550b98808da0154577dce29"
 dependencies = [
  "anyhow",
  "core-text",
@@ -3374,6 +3376,7 @@ dependencies = [
 [[package]]
 name = "gpui-component-macros"
 version = "0.11.0"
+source = "git+https://github.com/juanibiapina/gpui-kit?branch=bmo#a044db2e6482b1fb6550b98808da0154577dce29"
 dependencies = [
  "proc-macro-crate 3.5.0",
  "proc-macro2",
@@ -3718,6 +3721,7 @@ dependencies = [
 [[package]]
 name = "gpui-fps"
 version = "0.11.0"
+source = "git+https://github.com/juanibiapina/gpui-kit?branch=bmo#a044db2e6482b1fb6550b98808da0154577dce29"
 dependencies = [
  "core-graphics 0.24.0",
  "gpui-fast",
@@ -3735,6 +3739,7 @@ dependencies = [
 [[package]]
 name = "gpui-kit"
 version = "0.11.0"
+source = "git+https://github.com/juanibiapina/gpui-kit?branch=bmo#a044db2e6482b1fb6550b98808da0154577dce29"
 dependencies = [
  "gpui-base",
  "gpui-component",
@@ -3751,6 +3756,7 @@ dependencies = [
 [[package]]
 name = "gpui-kit-assets"
 version = "0.11.0"
+source = "git+https://github.com/juanibiapina/gpui-kit?branch=bmo#a044db2e6482b1fb6550b98808da0154577dce29"
 dependencies = [
  "anyhow",
  "gpui-fast",
@@ -4279,6 +4285,7 @@ checksum = "f0de0aaa67d6974e0983f6d4ded918b73547db6cb82b61ac2de88576a45b0e81"
 [[package]]
 name = "gpui-shell"
 version = "0.11.0"
+source = "git+https://github.com/juanibiapina/gpui-kit?branch=bmo#a044db2e6482b1fb6550b98808da0154577dce29"
 dependencies = [
  "anyhow",
  "async-channel",
@@ -4321,6 +4328,7 @@ dependencies = [
 [[package]]
 name = "gpui-webview"
 version = "0.11.0"
+source = "git+https://github.com/juanibiapina/gpui-kit?branch=bmo#a044db2e6482b1fb6550b98808da0154577dce29"
 dependencies = [
  "anyhow",
  "gdkx11",

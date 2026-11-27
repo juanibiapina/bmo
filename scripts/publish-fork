@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+#
+# Usage: scripts/publish-fork
+#
+# Publishes what bmo builds against: the gpui-kit fork with every fix branch
+# applied, as one commit on the fork's `bmo` branch. Run it after adding or
+# changing a fix branch in ../gpui-kit, then `cargo update -p gpui-shell` here.
+#
+# The fork's checkout is a GitButler workspace, so its HEAD is already all
+# applied branches merged. The new commit takes that tree. Its parents are the
+# previous `bmo` commit, so older revisions stay reachable for lock files that
+# name them, and the tip of each applied branch.
+
+set -euo pipefail
+
+fork="$(cd "$(dirname "$0")/../../gpui-kit" && pwd)"
+cd "$fork"
+
+[ -z "$(git status --porcelain)" ] || { echo "$fork has uncommitted changes" >&2; exit 1; }
+
+if [ "$(git rev-parse --abbrev-ref HEAD)" = "gitbutler/workspace" ]; then
+  tips="$(git log -1 --format=%P HEAD)"
+else
+  tips="$(git rev-parse HEAD)"
+fi
+
+git fetch --quiet origin '+refs/heads/bmo:refs/remotes/origin/bmo' 2>/dev/null || true
+previous="$(git rev-parse --verify --quiet refs/remotes/origin/bmo || true)"
+tree="$(git rev-parse 'HEAD^{tree}')"
+
+if [ -n "$previous" ] && [ "$(git rev-parse "$previous^{tree}")" = "$tree" ]; then
+  echo "the fork's bmo branch is already current: $previous"
+  exit 0
+fi
+
+parents=()
+for parent in $previous $tips; do parents+=(-p "$parent"); done
+branches="$(for tip in $tips; do git branch --points-at "$tip" --format='- %(refname:short)' | grep -v gitbutler || true; done)"
+commit="$(git commit-tree "$tree" "${parents[@]}" -m "bmo: upstream main with these fix branches applied
+
+$branches")"
+
+git push --quiet origin "$commit:refs/heads/bmo"
+echo "published $commit to the fork's bmo branch, with:"
+echo "$branches"
