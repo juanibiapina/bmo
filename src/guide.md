@@ -45,7 +45,8 @@ it. `bmo list` shows the apps.
 - `keys.js` is the app's own keyboard plumbing: key names, the footer, the
   help sheet and a one-line text box. Change it when the app needs to.
 - `gpui-shell.json` holds the `name` the person sees and an optional
-  `"window": { "width": 1000, "height": 700 }`. Leave `id` alone.
+  `"window": { "width": 1000, "height": 700 }`. Leave `id` alone. bmo
+  ignores `capabilities` there: nothing needs a grant.
 - `gpui-kit.d.ts` is generated on every check: the exact API of every element
   and module. Search it before using something this guide does not show.
 
@@ -60,7 +61,8 @@ Chained builders with GPUI's snake_case names: `div()`, `h_flex()`,
 `.hover((style) => style.bg(c))`; `.overflow_y_scrollbar()` on an element
 with an id. A long list is a `v_virtual_list`, as in the starting app.
 `TextView.markdown(id, text)` from `gpui-base` draws markdown, and
-`image(path)` from `gpui-kit` draws a picture from an absolute path.
+`image(path)` from `gpui-kit` draws a picture from any absolute path. A
+picture appears a frame or two after it is first drawn.
 
 - Every color comes from `theme()` in the `bmo` module, read inside `render`.
   A literal color breaks light or dark.
@@ -81,8 +83,22 @@ with an id. A long list is a `v_virtual_list`, as in the starting app.
 {{blocks}}
 ```
 
-Also there: `localStorage` (kept per app), `fs/promises` for any file,
-`process.dataDir` (the app's own data folder) and `os.homedir()`.
+Also there: `localStorage` (kept per app), `fs/promises` for any file and
+`os.homedir()`. Keep downloaded pictures and other caches under
+`process.dataDir`, the app's own data folder, and leave the app's folder
+for its code.
+
+The typings in `gpui-kit.d.ts` come from the runtime, and some of what they
+say is not true under bmo. Where they speak of `capabilities`, grants or a
+file having to be inside the app's folder, ignore it. Four things they list
+stay closed, each with a `bmo` call that replaces it:
+
+| Closed | Use |
+|---|---|
+| the global `fetch` | `fetch` and `download` from `bmo` |
+| `process.run` | `exec` from `bmo` |
+| the `net` module | `connect`, `read`, `write`, `close` from `bmo` |
+| the `websocket` module | nothing yet: run a small local program that holds the socket and reach it with `connect` |
 
 ## Conventions
 
@@ -120,16 +136,17 @@ searches and shows its keys the same way.
 - The keyboard cannot be moved onto an `Input` from code. For a search or
   filter box, use `TextBox` from `keys.js`, which reads key presses while
   the app keeps the keyboard.
-- A scrolling pane cannot be scrolled from code, only by the wheel. To read
-  long content by keys, draw it as a `list` or `v_virtual_list` of blocks
-  (paragraphs, comments, messages), keep the index of the block at the top,
-  and move it with a `VirtualListScrollHandle`'s `scroll_to_item`, as the
-  starting app does for its list.
+- Only a `v_virtual_list` can be scrolled from code, with a
+  `VirtualListScrollHandle`'s `scroll_to_item`, as the starting app does for
+  its list. It needs the height of every row up front. A `list` (rows of
+  unknown height) and a plain scrolling pane move only by the wheel: a
+  `list` ignores `track_scroll`, though `.with_follow_mode("tail")` keeps it
+  at its end. To read long content by keys, draw it as a `v_virtual_list` of
+  blocks (paragraphs, comments, messages) with a height worked out for each,
+  and keep the index of the block at the top.
 - Tab and shift-Tab never reach `on_key_down`: the window uses them to move
   focus first. Bind them as actions and send them to the same handler:
   `cx.bind_keys([{ keystroke: "tab", action: "app::Next", context: "App" }])`
   in `init`, then `.key_context("App").on_action("app::Next", (_event, cx) =>
   this.key({ key: "tab", modifiers: {} }, cx))` on the root element.
 - A length given as a number is pixels, but `line_height` takes `"19px"`.
-- The global `fetch` and `process.run` are the runtime's restricted ones.
-  Use `fetch` and `exec` from `bmo`.

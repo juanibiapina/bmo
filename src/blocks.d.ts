@@ -46,14 +46,36 @@ export function fetch(
  * Fetches a URL and saves the response to a file, creating its folder. Use it
  * for images and other files that are not text. Nothing is saved unless `ok`.
  *
- * `image(path)` draws only files inside the app's own folder, so save
- * pictures under it, in a folder Git ignores.
+ * `image(path)` draws a file from any absolute path. Save pictures and
+ * other caches under `process.dataDir`, the app's own data folder.
  */
 export function download(
   url: string,
   file: string,
   options?: { method?: string; headers?: Record<string, string>; body?: string; timeout?: number },
 ): Promise<{ status: number; ok: boolean; headers: Record<string, string> }>;
+
+/**
+ * Opens a TCP connection to any host, this Mac included, and resolves to the
+ * connection the next three calls take. Use it for a local service or a
+ * protocol that is not HTTP. Rejects when nothing answers.
+ */
+export function connect(host: string, port: number): Promise<number>;
+
+/**
+ * Waits for the next text to arrive and resolves to it, or to null once the
+ * other side has hung up. Text arrives in pieces of any size: for a protocol
+ * of lines, add each piece to a buffer and take the complete lines from it.
+ *
+ * Read in a loop inside `cx.spawn`, for as long as the app runs.
+ */
+export function read(connection: number): Promise<string | null>;
+
+/** Sends text over the connection. */
+export function write(connection: number, text: string): Promise<null>;
+
+/** Hangs up. A read that is waiting resolves to null. */
+export function close(connection: number): void;
 
 /** One of Herdr's terminals: a coding agent or a shell the user has open. */
 export interface Session {

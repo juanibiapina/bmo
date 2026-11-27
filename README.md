@@ -15,7 +15,7 @@ bmo is one program: the command line the agent drives and the runtime the apps r
 cargo install --path .
 ```
 
-Give your agent the skill in [skill/](skill/SKILL.md). It sends the agent to `bmo guide`, the manual for the installed version.
+Every bmo command writes its skill to `~/.agents/skills/bmo/SKILL.md`, where coding agents look for skills, so the skill always matches the installed bmo. It sends the agent to `bmo guide`, the manual for that version. `BMO_SKILLS` picks another skills folder.
 
 ## Use
 

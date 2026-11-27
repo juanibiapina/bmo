@@ -69,6 +69,8 @@ fn the_guide_teaches_the_loop_the_blocks_and_the_conventions() {
         "bmo shot",
         "export function exec(",
         "export function fetch(",
+        "export function connect(",
+        "process.dataDir",
         "export function sessions(",
         "export function theme(",
         "j / k",

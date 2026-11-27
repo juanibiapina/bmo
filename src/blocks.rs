@@ -6,6 +6,7 @@ use crate::exec;
 use crate::herdr;
 use crate::http;
 use crate::look;
+use crate::socket;
 use crate::theme::{self, Appearance};
 
 pub const DECLARATIONS: &str = include_str!("blocks.d.ts");
@@ -41,6 +42,33 @@ pub fn export() -> Result<(), HostError> {
                     }
                     Ok(http_response(&response).into())
                 })
+            })
+            .async_function("connect", |arguments: &HostArguments| {
+                let host = arguments.string(0)?.to_string();
+                let port = u16::try_from(arguments.integer(1)?)
+                    .map_err(|_| HostError::new("connect's port must be between 0 and 65535"))?;
+                Ok(async move {
+                    socket::connect(&host, port)
+                        .map(|id| HostValue::Number(id as f64))
+                        .map_err(HostError::new)
+                })
+            })
+            .async_function("read", |arguments: &HostArguments| {
+                let id = connection(arguments)?;
+                Ok(async move {
+                    socket::read(id)
+                        .await
+                        .map(|text| text.map_or(HostValue::Null, HostValue::Str))
+                        .map_err(HostError::new)
+                })
+            })
+            .async_function("write", |arguments: &HostArguments| {
+                let (id, text) = (connection(arguments)?, arguments.string(1)?.to_string());
+                Ok(async move { done(socket::write(id, &text)) })
+            })
+            .function("close", |arguments: &HostArguments| {
+                socket::close(connection(arguments)?);
+                Ok(HostValue::Null)
             })
             .async_function("sessions", |_: &HostArguments| {
                 Ok(async { herdr::sessions().map(|found| from_json(&found)).map_err(HostError::new) })
@@ -145,6 +173,11 @@ fn http_response(response: &http::Response) -> HostObject {
         .field("status", response.status)
         .field("ok", (200..300).contains(&response.status))
         .field("headers", headers)
+}
+
+fn connection(arguments: &HostArguments) -> Result<u64, HostError> {
+    u64::try_from(arguments.integer(0)?)
+        .map_err(|_| HostError::new("the first argument must be a connection from connect"))
 }
 
 fn done(result: Result<(), String>) -> Result<HostValue, HostError> {

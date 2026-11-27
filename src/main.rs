@@ -17,6 +17,8 @@ mod look;
 mod run;
 mod scaffold;
 mod shot;
+mod skill;
+mod socket;
 mod stage;
 mod theme;
 mod trust;
@@ -32,6 +34,7 @@ const HELP: &str = include_str!("help.txt");
 fn main() {
     let home = Home::from_environment();
     home.share_with_runtime();
+    skill::refresh();
 
     let arguments: Vec<String> = std::env::args().skip(1).collect();
     let wants_help = arguments.iter().any(|argument| argument == "--help" || argument == "-h");

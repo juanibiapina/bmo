@@ -13,6 +13,7 @@ use wait_timeout::ChildExt;
 pub struct Bmo {
     home: tempfile::TempDir,
     applications: tempfile::TempDir,
+    skills: tempfile::TempDir,
     environment: Vec<(String, String)>,
     bare: bool,
 }
@@ -22,6 +23,7 @@ impl Bmo {
         Self {
             home: tempfile::tempdir().expect("temporary bmo home"),
             applications: tempfile::tempdir().expect("temporary applications folder"),
+            skills: tempfile::tempdir().expect("temporary skills folder"),
             environment: Vec::new(),
             bare: false,
         }
@@ -42,6 +44,10 @@ impl Bmo {
         let shot = self.run(&["shot", name]);
         assert!(shot.success, "{}", shot.output());
         assert_eq!(center_color(&shot.stdout), GREEN, "{}", shot.output());
+    }
+
+    pub fn skills(&self) -> &Path {
+        self.skills.path()
     }
 
     pub fn home(&self) -> &Path {
@@ -70,6 +76,7 @@ impl Bmo {
         }
         let mut child = command
             .args(arguments)
+            .env("BMO_SKILLS", self.skills())
             .envs(self.environment.iter().cloned())
             .env("BMO_HOME", self.home())
             .env("BMO_APPLICATIONS", self.applications.path())

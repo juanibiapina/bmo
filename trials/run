@@ -20,6 +20,8 @@ echo "trial: $trial"
 echo "request: $request"
 echo "run: $run"
 
+bmo help > /dev/null # writes the skill of the installed bmo where pi finds it
+
 BMO_HOME="$run/home" BMO_APPLICATIONS="$run/Applications" \
-  pi --skill "$repo/skill" --session-dir "$run/sessions" --name "bmo trial $trial" \
+  pi --session-dir "$run/sessions" --name "bmo trial $trial" \
   -p "$request" 2>&1 | tee "$run/output.txt"
