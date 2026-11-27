@@ -15,6 +15,7 @@ use crate::stage::{self, or_exit, problem};
 
 const SETTLE: Duration = Duration::from_millis(500);
 const BETWEEN_KEYS: Duration = Duration::from_millis(50);
+const FRAME: Duration = Duration::from_millis(50);
 
 pub fn capture(home: &Home, app: &BmoApp, options: &[String]) -> Result<Infallible, String> {
     let Options { keys, label, settle } = options_given(options)?;
@@ -105,8 +106,7 @@ async fn save(
     image: &Path,
     cx: &mut AsyncApp,
 ) -> Result<(), String> {
-    let pause = async |time: Duration, cx: &mut AsyncApp| cx.background_executor().timer(time).await;
-    pause(settle, cx).await;
+    frames(window, settle, cx).await?;
     for key in keys {
         cx.update(|cx| {
             window.update(cx, |_, window, cx| {
@@ -115,10 +115,10 @@ async fn save(
             })
         })
         .map_err(problem)?;
-        pause(BETWEEN_KEYS, cx).await;
+        frames(window, BETWEEN_KEYS, cx).await?;
     }
     if !keys.is_empty() {
-        pause(settle, cx).await;
+        frames(window, settle, cx).await?;
     }
     let rendered = cx
         .update(|cx| {
@@ -130,6 +130,22 @@ async fn save(
         .map_err(problem)?
         .map_err(problem)?;
     write(&rendered, image).map_err(|error| format!("cannot write {}: {error}", image.display()))
+}
+
+/// Draws frames for this long, as a window on screen would. A hidden window
+/// draws only when told to, and a picture loads only once a frame has asked
+/// for it, so without these a picture the app shows late stays blank.
+async fn frames(window: AnyWindowHandle, time: Duration, cx: &mut AsyncApp) -> Result<(), String> {
+    let started = std::time::Instant::now();
+    loop {
+        cx.update(|cx| window.update(cx, |_, window, cx| window.draw(cx).clear(cx)))
+            .map_err(problem)?;
+        let left = time.saturating_sub(started.elapsed());
+        if left.is_zero() {
+            return Ok(());
+        }
+        cx.background_executor().timer(left.min(FRAME)).await;
+    }
 }
 
 fn write(rendered: &image::RgbaImage, image: &Path) -> Result<(), String> {

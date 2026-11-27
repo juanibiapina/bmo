@@ -61,8 +61,7 @@ Chained builders with GPUI's snake_case names: `div()`, `h_flex()`,
 `.hover((style) => style.bg(c))`; `.overflow_y_scrollbar()` on an element
 with an id. A long list is a `v_virtual_list`, as in the starting app.
 `TextView.markdown(id, text)` from `gpui-base` draws markdown, and
-`image(path)` from `gpui-kit` draws a picture from any absolute path. A
-picture appears a frame or two after it is first drawn.
+`image(path)` from `gpui-kit` draws a picture from any absolute path.
 
 - Every color comes from `theme()` in the `bmo` module, read inside `render`.
   A literal color breaks light or dark.

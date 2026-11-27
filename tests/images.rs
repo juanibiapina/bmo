@@ -45,3 +45,40 @@ fn an_app_draws_a_picture_from_anywhere_on_the_disk() {
 
     assert_eq!(center_color(&shot.stdout), [0, 0, 255], "{}", shot.output());
 }
+
+#[test]
+fn a_screenshot_shows_a_picture_the_app_finds_after_it_starts() {
+    let bmo = Bmo::new();
+    let picture = bmo.home().join("data/late/blue.png");
+    blue_picture(&picture);
+    bmo.app_with(
+        "late",
+        &format!(
+            r#"
+import {{ View, div, image }} from "gpui-kit";
+import {{ exec }} from "bmo";
+
+export default class App extends View {{
+  init(_props, cx) {{
+    this.found = false;
+    cx.spawn(async (cx) => {{
+      await exec("sleep", ["0.2"]);
+      this.found = true;
+      cx.notify();
+    }});
+  }}
+
+  render() {{
+    const box = div().size_full();
+    return this.found ? box.child(image("{}").size_full()) : box;
+  }}
+}}
+"#,
+            picture.display()
+        ),
+    );
+
+    let shot = bmo.run(&["shot", "late"]);
+
+    assert_eq!(center_color(&shot.stdout), [0, 0, 255], "{}", shot.output());
+}

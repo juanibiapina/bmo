@@ -8,6 +8,8 @@ Each `<trial>.md` has the request, the answers the user would give if asked, and
 trials/run hn
 ```
 
+A trial that changes an app the user already has runs with `--here`, in their real bmo home; copy the app aside first to compare.
+
 The run's bmo home, the agent's output and the session are kept under `~/.local/state/bmo-trials/<trial>-<time>/`.
 
 ## Rules
