@@ -52,3 +52,14 @@ fn an_existing_app_is_not_overwritten() {
     let main = std::fs::read_to_string(bmo.app("hn").join("main.js")).expect("read the app");
     assert_eq!(main, "my work");
 }
+
+#[test]
+fn a_new_app_starts_without_a_title_bar() {
+    let bmo = Bmo::new();
+    bmo.run(&["new", "hn"]);
+
+    let settings = std::fs::read_to_string(bmo.app("hn").join("bmo.json")).expect("the settings");
+    let settings: serde_json::Value = serde_json::from_str(&settings).expect("JSON");
+
+    assert_eq!(settings["title_bar"], false);
+}
