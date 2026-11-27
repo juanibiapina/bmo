@@ -17,16 +17,20 @@ Apps live in `{{apps}}/<name>/`. Work only inside the app's folder.
    with no window, and reports syntax, import and first-draw errors. It does
    not run code after an `await`.
 4. `bmo shot <name>` draws a fresh hidden copy of the app, waits half a
-   second, and prints what the app logged and then the path of a PNG. Open the
+   second, and prints what the app logged and then the path of a PNG. It
+   fails when the app logged an ERROR, such as a rejection nobody caught;
+   read its whole output, not the last lines. Open the
    PNG and look at it. `--keys "j j ?"` presses keys first, so a screen that
    needs a key press can be captured. `--wait 5` waits five seconds instead,
    before the keys and again after them, for work such as a network load or
    a live connection. `--as help` saves it as
    `<name>-help.png`, to keep several. `--dark` and `--light` pick the
    appearance.
-5. The app is done when the check passes, the output of `bmo shot` has no
-   ERROR line, and you have looked at a screenshot of the first screen and of
-   every screen you added, the help sheet included. Check one screenshot in
+5. The app is done when the check passes, every `bmo shot` succeeds, and
+   you have looked at a screenshot of the first screen and of every screen
+   you added, the help sheet included. Press every key that starts work
+   after an `await` (a load, a save, a move to another item) in a shot with
+   a `--wait` long enough for the work to end: that code runs nowhere else. Check one screenshot in
    `--light` too.
 
 `console.log` appears in the output of `bmo shot`: use it to see what code
@@ -69,7 +73,9 @@ with an id. A long list is a `v_virtual_list`, as in the starting app.
   after `init` and overwrites it.
 - After changing state in a handler or a task, call `cx.notify()`.
 - A `cx` is valid only for the call that got it. For work with an `await`,
-  use `cx.spawn(async (cx) => { … })` and the `cx` it hands you.
+  use `cx.spawn(async (cx) => { … })` and the `cx` it hands you. A helper
+  that spawns must pass that new `cx` on to the work it runs: a closure
+  that kept the caller's `cx` throws "cx is no longer valid".
 - Build elements inside `render`; never keep one on `this`.
 - Controls from `gpui-base` (`Button`, `Input`, `Checkbox`) draw nothing by
   themselves: give them padding, colors and corners.

@@ -9,6 +9,7 @@ use gpui_shell::gpui::{
 
 use crate::app::App as BmoApp;
 use crate::home::Home;
+use crate::log;
 use crate::look;
 use crate::theme::Appearance;
 use crate::stage::{self, or_exit, problem};
@@ -37,6 +38,12 @@ pub fn capture(home: &Home, app: &BmoApp, options: &[String]) -> Result<Infallib
         cx.spawn(async move |cx| {
             or_exit(save(window, &keys, settle, &image, cx).await);
             println!("{}", image.display());
+            let errors = log::errors();
+            if errors > 0 {
+                let noun = if errors == 1 { "error" } else { "errors" };
+                eprintln!("bmo: the app logged {errors} {noun}, shown above; the screenshot was still saved");
+                std::process::exit(1);
+            }
             std::process::exit(0);
         })
         .detach();

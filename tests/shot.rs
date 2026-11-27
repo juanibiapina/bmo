@@ -110,3 +110,34 @@ fn a_wait_must_be_a_number_of_seconds() {
     assert!(!shot.success);
     assert!(shot.stderr.contains("--wait needs seconds"), "{}", shot.stderr);
 }
+
+#[test]
+fn a_screenshot_of_an_app_that_logged_an_error_fails_and_is_still_saved() {
+    let bmo = Bmo::new();
+    bmo.app_with(
+        "broken",
+        r##"
+import { View, div } from "gpui-kit";
+
+export default class App extends View {
+  init(_props, cx) {
+    cx.spawn(async (cx) => {
+      await cx.sleep(50);
+      throw new Error("the load broke");
+    });
+  }
+
+  render() {
+    return div().size_full().bg("#ff0000");
+  }
+}
+"##,
+    );
+
+    let shot = bmo.run(&["shot", "broken"]);
+
+    assert!(!shot.success, "{}", shot.output());
+    assert!(shot.stderr.contains("the load broke"), "{}", shot.stderr);
+    assert!(shot.stderr.contains("the app logged 1 error"), "{}", shot.stderr);
+    assert_eq!(center_color(&shot.stdout), [255, 0, 0]);
+}
