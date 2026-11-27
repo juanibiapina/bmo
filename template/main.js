@@ -10,7 +10,7 @@ import { keyName, footer, Help } from "./keys.js";
 
 const ROW_HEIGHT = 30;
 
-// Every key, once: the handler, the footer and the help sheet all read this.
+// Every key, once: the handler, the footer and the help popup all read this.
 const KEYS = [
   { keys: ["j", "down"], label: "next", group: "Move", act: "next", footer: true },
   { keys: ["k", "up"], label: "previous", group: "Move", act: "previous" },
@@ -78,7 +78,6 @@ export default class App extends View {
 
   renderDetail(t) {
     const detail = v_flex().flex_1().min_w(0).h_full().rounded(10).bg(t.background).border_1().border_color(t.border);
-    if (this.help.open) return detail.child(this.help.render(t, KEYS));
     const item = this.items[this.at];
     if (!item) return detail.items_center().justify_center().text_color(t.dim).child("Nothing here");
     return detail.id("detail").p(24).gap(10).overflow_y_scrollbar()
@@ -92,9 +91,10 @@ export default class App extends View {
       .id("app")
       .track_focus(this.handle)
       .on_key_down((event, cx) => this.key(event, cx))
-      .size_full().p(12).gap(10)
+      .relative().size_full().p(12).gap(10)
       .bg(t.canvas).text_size(13).text_color(t.foreground)
       .child(h_flex().flex_1().min_h(0).gap(10).child(this.renderList(t)).child(this.renderDetail(t)))
-      .child(footer(t, KEYS, this.note));
+      .child(footer(t, KEYS, this.note))
+      .when(this.help.open, (el) => el.child(this.help.render(t, KEYS)));
   }
 }

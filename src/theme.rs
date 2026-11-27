@@ -49,6 +49,7 @@ pub fn colors(appearance: Appearance) -> Vec<(String, String)> {
             ("input", "#00000026".into()),
             ("canvas", toward(warm, 0.2)),
             ("chrome", toward(warm, 0.6)),
+            ("scrim", "#00000033".into()),
         ]
     } else {
         [
@@ -60,6 +61,7 @@ pub fn colors(appearance: Appearance) -> Vec<(String, String)> {
             ("input", "#ffffff24".into()),
             ("canvas", toward(0, 0.16)),
             ("chrome", toward(0, 0.32)),
+            ("scrim", "#00000066".into()),
         ]
     };
     let solid_foreground = if light { 0xffffff } else { mix(background, 0, 0.28) };

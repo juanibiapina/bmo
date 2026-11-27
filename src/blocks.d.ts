@@ -4,7 +4,8 @@
  * these and never a literal color.
  *
  * background and surface (the window), canvas (behind cards), chrome (bars
- * and sidebars), popover, raised, hover, selected, border, input (a stronger
+ * and sidebars), popover, scrim (what dims the app behind a popup), raised,
+ * hover, selected, border, input (a stronger
  * border), foreground, muted, dim, accent, accent_foreground, solid and
  * solid_foreground (a primary button), ring, selection, working, blocked,
  * done, idle, ansi0..ansi15.

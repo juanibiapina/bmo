@@ -50,3 +50,22 @@ fn a_new_app_opens_and_closes_its_help_sheet() {
     assert_ne!(screen(&bmo, "? / q u i t"), help);
     assert_eq!(screen(&bmo, "? / q u i t escape"), help);
 }
+
+#[test]
+fn the_help_is_a_popup_over_the_app() {
+    let bmo = Bmo::new();
+    bmo.run(&["new", "fresh"]);
+    let brightness = |keys: &str, x: u32, y: u32| {
+        let shot = bmo.run(&["shot", "fresh", "--light", "--keys", keys]);
+        assert!(shot.success, "{}", shot.output());
+        let image = image::open(shot.stdout.trim()).expect("the screenshot").to_rgb8();
+        image.get_pixel(x, y).0.iter().map(|part| u32::from(*part)).sum::<u32>()
+    };
+
+    // The corner of the window is the app's own edge, far from the popup:
+    // with the help open it is still the app, dimmed.
+    let (plain, dimmed) = (brightness("j k", 4, 4), brightness("?", 4, 4));
+
+    assert!(dimmed < plain, "the app behind the help is not dimmed: {dimmed} against {plain}");
+    assert!(dimmed > plain / 2, "the app behind the help is hidden: {dimmed} against {plain}");
+}

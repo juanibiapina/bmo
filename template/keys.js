@@ -1,6 +1,6 @@
 // Keyboard plumbing every bmo app starts with: key names, key chips, the
-// footer and the help sheet. The app owns a KEYS table (see main.js) and this
-// file draws the footer and the help sheet from it, so a key is described once.
+// footer and the help popup. The app owns a KEYS table (see main.js) and this
+// file draws the footer and the help popup from it, so a key is described once.
 // It is the app's own code: change it when the app needs something else.
 
 import { div } from "gpui-kit";
@@ -84,7 +84,7 @@ export class TextBox {
   }
 }
 
-// The help sheet: every key in the table, grouped, with a search box.
+// The help popup: every key in the table, grouped, with a search box.
 // While it shows, / opens the box, ↵ keeps the matches, Esc clears the search
 // and then closes the sheet, and any other key closes it.
 export class Help {
@@ -136,20 +136,24 @@ export class Help {
     return columns;
   }
 
-  // about is one line under the keys saying what the app changes, if anything.
+  // A popup over the whole app: add it as the last child of the root element,
+  // which must be .relative(), while the help is open. about is one line
+  // under the keys saying what the app changes, if anything.
   render(t, keys, about) {
     const shown = keys.filter((k) => this.search.matches([...k.keys, k.label, k.group].join(" ")));
-    return v_flex().size_full().gap(14).p(20)
+    const columns = this.columns(shown);
+    const card = v_flex().w(columns.length * 280 + 40).max_w_full().max_h_full().overflow_hidden()
+      .gap(14).p(20).rounded(12).bg(t.popover).border_1().border_color(t.border).shadow_lg()
       .child(div().text_size(14).font_semibold().text_color(t.foreground).child("Keys"))
       .when(this.searching || Boolean(this.search.text), (el) => el.child(this.search.render(t, this.searching)))
       .when(Boolean(this.search.text) && !shown.length, (el) => el.child(div().text_size(12).text_color(t.dim).child(`No key matches “${this.search.text}”`)))
-      .child(h_flex().gap(28).items_start().children(this.columns(shown).map((groups) => v_flex().flex_1().min_w(0).gap(14)
+      .child(h_flex().gap(28).items_start().children(columns.map((groups) => v_flex().flex_1().min_w(0).gap(14)
         .children(groups.map((group) => v_flex().gap(4)
           .child(div().text_size(10.5).font_semibold().text_color(t.dim).child(group.name.toUpperCase()))
           .children(group.keys.map((k) => h_flex().gap(8).items_center()
             .child(h_flex().gap(3).w(60).flex_none().children(k.keys.map((key) => keyChip(t, key))))
             .child(div().truncate().text_size(12).text_color(t.muted).child(k.label)))))))))
-      .child(div().flex_1())
       .child(div().text_size(11.5).text_color(t.dim).child(`${about ? `${about} ` : ""}/ searches the keys; any other key closes this.`));
+    return v_flex().absolute().inset_0().p(24).items_center().justify_center().bg(t.scrim).child(card);
   }
 }

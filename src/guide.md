@@ -19,7 +19,9 @@ Apps live in `{{apps}}/<name>/`. Work only inside the app's folder.
 4. `bmo shot <name>` draws a fresh hidden copy of the app, waits half a
    second, and prints what the app logged and then the path of a PNG. It
    fails when the app logged an ERROR, such as a rejection nobody caught;
-   read its whole output, not the last lines. Open the
+   read its whole output, not the last lines. It cannot tell when `render`
+   threw: that shows only as a "Render failed" bar across the top of the
+   picture, over the last good frame. Open the
    PNG and look at it. `--keys "j j ?"` presses keys first, so a screen that
    needs a key press can be captured. `--wait 5` waits five seconds instead,
    before the keys and again after them, for work such as a network load or
@@ -28,7 +30,7 @@ Apps live in `{{apps}}/<name>/`. Work only inside the app's folder.
    appearance.
 5. The app is done when the check passes, every `bmo shot` succeeds, and
    you have looked at a screenshot of the first screen and of every screen
-   you added, the help sheet included. Press every key that starts work
+   you added, the help popup included. Press every key that starts work
    after an `await` (a load, a save, a move to another item) in a shot with
    a `--wait` long enough for the work to end: that code runs nowhere else. Check one screenshot in
    `--light` too.
@@ -47,7 +49,7 @@ it. `bmo list` shows the apps.
 
 - `main.js` default-exports a class that extends `View`.
 - `keys.js` is the app's own keyboard plumbing: key names, the footer, the
-  help sheet and a one-line text box. Change it when the app needs to.
+  help popup and a one-line text box. Change it when the app needs to.
 - `gpui-shell.json` holds the `name` the person sees and an optional
   `"window": { "width": 1000, "height": 700 }`. Leave `id` alone. bmo
   ignores `capabilities` there: nothing needs a grant.
@@ -121,15 +123,19 @@ searches and shows its keys the same way.
 | Scroll what is being read | J / K a line, ctrl-d / ctrl-u half a page |
 | Between panes and views | h / l between panes, Tab between views |
 | Search or filter | / opens a box; ↵ keeps the result, Esc clears and leaves |
-| Help | ? opens a searchable sheet of every key |
+| Help | ? opens a searchable popup of every key, over the app |
 | Leave | q or Esc goes back one step; at the top q quits and Esc does nothing |
 | Open and copy | o or ↵ opens the item, Y copies its link |
 | Write | i starts writing, ↵ sends, shift-↵ adds a line |
 | Change things | c creates, r replies or renames, d or e dismisses, z undoes, ctrl-r reloads |
 | Send to an agent | p to the focused session, P picks one, n starts a new one, s shows it |
 
+- The help is a popup over the whole app, which stays visible and dimmed
+  behind it: `Help` in `keys.js` draws it, as the last child of the root
+  element. Other things that sit over the app for a moment (a picker, a
+  question) look the same: a card in `popover` on a `scrim`.
 - One `KEYS` table says what every key does. The handler, the footer and the
-  help sheet read it, so a key is described once.
+  help popup read it, so a key is described once.
 - The footer shows the main keys of the current screen and, on the right, a
   short note when something happened or failed.
 - Clicks work, but nothing needs the pointer.
